@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>冰雪故事书 · 魔法词书 | Frozen Storybook & the Magic Word Book</title>
+<style>
+:root{
+  --ink:#243b53;--soft:#5b7189;--paper:#fffdf8;--line:#e3e9f0;
+  --blue:#4a86c8;--deep:#2b5f96;--gold:#f6c453;--mint:#5fc493;
+  --shadow:0 10px 30px rgba(43,95,150,.13),0 2px 6px rgba(43,95,150,.08);
+  --r:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
+  color:var(--ink);background:#dcecf9;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+#app{min-height:100vh;position:relative;overflow:hidden}
+.screen{min-height:100vh;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px}
+.wrap{width:100%;max-width:900px;margin:0 auto}
+.hidden{display:none!important}
+.bg{position:fixed;inset:0;z-index:0;transition:background 1s ease}
+.bg.title{background:linear-gradient(170deg,#173f6f 0%,#3878b4 42%,#9fd0ec 78%,#eaf6ff 100%)}
+.bg.map{background:linear-gradient(165deg,#e8f4ff,#f7fbff 55%,#fdf6ea)}
+.bg.castle{background:linear-gradient(170deg,#cfe8fb,#eaf5ff 55%,#fffaf0)}
+.bg.winter{background:linear-gradient(170deg,#9fc4e4,#dceefb 50%,#f4faff)}
+.bg.summer{background:linear-gradient(170deg,#ffe9a8,#fff3cf 45%,#e5f4d4)}
+.bg.sea{background:linear-gradient(170deg,#a9d8f0,#ffe2c2 55%,#fff3e0)}
+.bg.shop{background:linear-gradient(170deg,#ffdfbe,#fff0dc 48%,#f8e6cf)}
+.bg.party{background:linear-gradient(170deg,#e7d9fb,#fbe9f2 48%,#fff2e3)}
+.bg.night{background:linear-gradient(170deg,#5b6fa8,#9aa8d4 48%,#dfe4f7)}
+.bg.forest{background:linear-gradient(170deg,#8fb6c9,#cfe4ec 48%,#eef6f3)}
+.bg.mountain{background:linear-gradient(170deg,#7fa6c8,#cfe3f0 48%,#f2f8fb)}
+.bg.finale{background:linear-gradient(165deg,#24528b,#7fa9d6 45%,#ffe7bd)}
+#flakes{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.flake{position:absolute;top:-8%;color:#fff;opacity:.7;animation:fall linear infinite;user-select:none}
+@keyframes fall{0%{transform:translateY(-10vh) rotate(0)}100%{transform:translateY(112vh) rotate(320deg)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+@keyframes pop{0%{transform:scale(.2) rotate(-18deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(246,196,83,0),var(--shadow)}50%{box-shadow:0 0 0 14px rgba(246,196,83,.3),var(--shadow)}}
+@media (prefers-reduced-motion:reduce){.flake{display:none}*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.card{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);padding:22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:11px 24px;
+  border-radius:17px;font-size:17px;font-weight:800;background:linear-gradient(180deg,#fff,#f2f8ff);color:var(--deep);
+  border:2px solid #fff;box-shadow:0 5px 0 #b9d3ea,0 10px 20px rgba(43,95,150,.15);transition:transform .12s}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b9d3ea}
+.btn.primary{background:linear-gradient(180deg,#ffd873,#f4b53c);color:#6b4708;border-color:#ffe6a3;box-shadow:0 5px 0 #d79a27,0 10px 20px rgba(214,154,39,.25)}
+.btn.primary:active{box-shadow:0 2px 0 #d79a27}
+.btn.ghost{background:rgba(255,255,255,.75);font-size:15px;min-height:44px;padding:7px 16px;box-shadow:0 4px 0 rgba(150,180,210,.4)}
+.btn.small{min-height:42px;padding:7px 15px;font-size:15px;border-radius:13px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.topbar{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.topbar .right{display:flex;gap:7px;flex-wrap:wrap}
+.pill{display:inline-flex;gap:6px;align-items:center;background:rgba(255,255,255,.85);border-radius:999px;
+  padding:6px 14px;font-size:14px;color:var(--deep);font-weight:800}
+h1,h2,h3{margin:0 0 8px;line-height:1.3}
+.sub{color:var(--soft);font-size:15px}
+.en-line{font-size:clamp(20px,3.3vw,29px);font-weight:800;line-height:1.4}
+.zh-line{font-size:clamp(15px,2.1vw,18px);color:var(--soft);margin-top:6px}
+.center{text-align:center}.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+/* title */
+.title-box{text-align:center;color:#fff;margin-top:min(8vh,70px)}
+.title-box h1{font-size:clamp(30px,6.5vw,58px);text-shadow:0 4px 18px rgba(20,50,90,.4);letter-spacing:2px}
+.title-box .eng{font-family:Georgia,serif;font-size:clamp(15px,2.5vw,22px);opacity:.95}
+.title-box .desc{margin:14px auto 22px;max-width:600px;font-size:15.5px;opacity:.94}
+.name-field{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0 10px}
+.name-field input{font-size:17px;padding:13px 17px;border-radius:15px;border:3px solid rgba(255,255,255,.85);
+  background:rgba(255,255,255,.94);min-width:220px;text-align:center;color:var(--ink);outline:none}
+.snowman{font-size:clamp(66px,13vw,120px);filter:drop-shadow(0 12px 18px rgba(20,50,90,.3));animation:bob 3.4s ease-in-out infinite}
+/* map */
+.map-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.map-head h2{font-size:clamp(22px,3.8vw,32px)}
+.pages{display:flex;gap:4px;flex-wrap:wrap;max-width:330px}
+.pg{width:19px;height:25px;border-radius:4px 7px 7px 4px;background:#e6edf5;border:1.5px solid #cfdce9}
+.pg.on{background:linear-gradient(160deg,#ffe08a,#f6bd45);border-color:#e9ae32;box-shadow:0 2px 6px rgba(230,170,50,.4)}
+.act{margin:22px 0 10px;display:flex;align-items:center;gap:10px;color:var(--deep)}
+.act h3{font-size:18px;margin:0}.act .line{flex:1;height:2px;background:linear-gradient(90deg,#b9d3ea,transparent)}
+.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px}
+.ch-card{background:var(--paper);border-radius:18px;padding:15px;box-shadow:var(--shadow);border:3px solid transparent;
+  min-height:158px;display:flex;flex-direction:column;gap:5px;text-align:left;width:100%;transition:transform .14s}
+.ch-card:hover:not(.locked){transform:translateY(-4px)}
+.ch-card.locked{opacity:.6;filter:grayscale(.4);cursor:default}
+.ch-card.done{border-color:#f2c65c}
+.ch-card .num{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:1.4px}
+.ch-card .emoji{font-size:33px;line-height:1.1}
+.ch-card h3{font-size:17px;margin:0}
+.ch-card .eng{font-family:Georgia,serif;font-size:13px;color:var(--soft)}
+.ch-card .src{font-size:11.5px;color:#8ba0b5;margin-top:auto}
+.ch-card .badge{position:absolute;top:10px;right:10px;font-size:17px}
+.ch-card{position:relative}
+.tag-comedy{display:inline-block;background:#fff0d6;color:#96690f;border-radius:6px;padding:1px 6px;font-size:10.5px;font-weight:800}
+/* stage */
+.stage{flex:1;width:100%;max-width:860px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.actor{display:flex;flex-direction:column;align-items:center;gap:5px}
+.avatar{width:clamp(84px,15vw,124px);height:clamp(84px,15vw,124px);border-radius:50%;display:grid;place-items:center;
+  font-size:clamp(44px,8vw,66px);background:rgba(255,255,255,.75);border:5px solid rgba(255,255,255,.95);
+  box-shadow:0 10px 26px rgba(43,95,150,.2);animation:bob 3.6s ease-in-out infinite}
+.actor .who{background:rgba(255,255,255,.92);border-radius:999px;padding:3px 15px;font-weight:800;font-size:14px;color:var(--deep)}
+.dlg{width:100%;background:var(--paper);border-radius:22px;padding:22px 24px;box-shadow:var(--shadow);position:relative;min-height:132px}
+.dlg .beat{font-size:12px;font-weight:800;color:var(--blue);letter-spacing:1.2px;margin-bottom:6px}
+.dlg .actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap}
+.speak-btn{border-radius:999px;background:#eaf4ff;color:var(--deep);padding:8px 14px;font-weight:800;font-size:14px;min-height:42px;cursor:pointer}
+.reveal-btn{font-size:13.5px;color:var(--soft);text-decoration:underline dotted;padding:7px;cursor:pointer}
+.egg-btn{position:absolute;top:8px;right:12px;font-size:19px;opacity:.5;cursor:pointer}
+.egg-btn:hover{opacity:1;transform:scale(1.2)}
+.cover-card{text-align:center;padding:28px 22px}
+.cover-card .big{font-size:clamp(58px,11vw,96px);animation:pop .6s cubic-bezier(.2,1.5,.4,1)}
+.cover-card .author{font-size:13px;color:var(--soft);font-family:Georgia,serif}
+.cover-card .mainline{margin-top:14px;background:#f2f8ff;border-radius:14px;padding:12px 16px;font-size:15px;text-align:left}
+/* choices / options */
+.choices{display:grid;gap:11px;width:100%}
+.choice{background:var(--paper);border-radius:16px;padding:14px 16px;text-align:left;box-shadow:var(--shadow);
+  border:3px solid rgba(255,255,255,.9);min-height:72px;display:flex;gap:12px;align-items:center;transition:transform .12s}
+.choice:hover{transform:translateX(5px);border-color:var(--gold)}
+.choice .k{font-size:24px;flex:0 0 auto}
+.choice strong{display:block;font-size:17px}.choice span{font-size:14.5px;color:var(--soft)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;width:100%}
+.opt{background:var(--paper);border-radius:16px;padding:13px 10px;min-height:72px;box-shadow:var(--shadow);
+  font-size:20px;font-weight:800;border:3px solid transparent;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px}
+.opt small{font-size:13.5px;font-weight:500;color:var(--soft)}
+.opt:hover{border-color:var(--blue)}
+.opt.right{background:#e7f8ef;border-color:var(--mint);color:#1d7a4d}
+.opt.wrong{animation:shake .38s ease;border-color:#f0a9a1}
+.opt.picked{background:#eaf4ff;border-color:var(--blue)}
+.feedback{min-height:32px;font-weight:800;font-size:16px;text-align:center;color:var(--deep)}
+.big-emoji{font-size:clamp(72px,14vw,128px);line-height:1;animation:bob 3s ease-in-out infinite;filter:drop-shadow(0 8px 12px rgba(43,95,150,.16))}
+.quiz-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;width:100%;margin-bottom:12px}
+/* puzzle & order */
+.slots{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:70px;padding:12px;
+  background:rgba(255,255,255,.6);border:3px dashed #b9d3ea;border-radius:16px;width:100%}
+.slot{min-height:48px;padding:9px 14px;border-radius:12px;background:var(--paper);box-shadow:var(--shadow);font-size:19px;font-weight:800}
+.slot.ph{background:rgba(255,255,255,.3);box-shadow:none;color:#a9bccf;border:2px dashed #c9dced}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;margin-top:4px}
+.token{background:linear-gradient(180deg,#fff,#eef6ff);border:3px solid #fff;border-radius:12px;padding:9px 15px;
+  font-size:19px;font-weight:800;box-shadow:0 4px 0 #c4dcf0;min-height:48px}
+.token:active{transform:translateY(3px);box-shadow:0 1px 0 #c4dcf0}.token.hint{outline:4px solid var(--gold)}
+.ordercard{background:var(--paper);border-radius:15px;padding:13px 15px;box-shadow:var(--shadow);width:100%;
+  text-align:left;border:3px solid transparent;font-size:15px;display:flex;gap:12px;align-items:center}
+.ordercard .n{width:28px;height:28px;border-radius:50%;background:#eaf4ff;color:var(--deep);display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+.ordercard.picked{border-color:var(--gold)}
+.ordercard strong{display:block;font-size:16px}.ordercard span{font-size:14px;color:var(--soft)}
+/* moment */
+.moment{text-align:center;background:rgba(255,255,255,.92);border-radius:26px;padding:26px 22px;box-shadow:var(--shadow);width:100%}
+.moment .sentence{font-family:Georgia,serif;font-size:clamp(24px,4.6vw,40px);font-weight:800;color:var(--deep);margin:8px 0}
+.moment .zh{font-size:clamp(16px,2.5vw,20px);color:var(--soft)}
+.glow{animation:glow 1.7s ease-in-out infinite}
+.reveal-big{font-size:clamp(54px,11vw,100px);animation:pop .6s cubic-bezier(.2,1.6,.4,1)}
+/* lists */
+.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.wordchip{background:var(--paper);border-radius:14px;padding:12px;box-shadow:var(--shadow);text-align:center;cursor:pointer}
+.wordchip .x{font-size:26px}.wordchip .e{font-weight:800;font-size:17px}.wordchip .z{font-size:13.5px;color:var(--soft)}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--paper);border-radius:14px;overflow:hidden}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}th{background:#eaf4ff;color:var(--deep)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99;background:rgba(36,59,83,.94);
+  color:#fff;padding:12px 20px;border-radius:14px;font-size:15px;max-width:88vw;text-align:center;box-shadow:var(--shadow)}
+.footer-note{font-size:12.5px;color:var(--soft);text-align:center;margin-top:18px;opacity:.85}
+/* 缺少彩色 emoji 字体时的降级：彩色文字徽章 */
+.efb{display:inline-grid;place-items:center;width:1.3em;height:1.3em;border-radius:50%;
+  font-size:.72em;font-weight:800;line-height:1;vertical-align:-.08em;white-space:nowrap;
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.08),0 1px 3px rgba(43,95,150,.16)}
+.avatar .efb,.big-emoji .efb,.snowman .efb,.reveal-big .efb{font-size:.56em}
+</style>
+</head>
+<body>
+<div class="bg title" id="bg"></div>
+<div id="flakes"></div>
+<div id="app"></div>
+
+<!-- ==================== 全书 18 篇数据（完整保留情节与主线） ==================== -->
+<script id="story-data" type="application/json">
+{
+"cast":{
+ "anna":{"z":"安娜","e":"Anna","x":"👧"},
+ "elsa":{"z":"艾莎","e":"Elsa","x":"👸"},
+ "olaf":{"z":"奥拉夫","e":"Olaf","x":"⛄"},
+ "kristoff":{"z":"克里斯托夫","e":"Kristoff","x":"🧑"},
+ "sven":{"z":"斯特恩","e":"Sven","x":"🦌"},
+ "oaken":{"z":"奥肯","e":"Oaken","x":"🧔"},
+ "bulda":{"z":"布达","e":"Bulda","x":"💎"},
+ "trolls":{"z":"地精们","e":"Trolls","x":"🪨"},
+ "king":{"z":"国王","e":"The King","x":"🤴"},
+ "newfriend":{"z":"新朋友","e":"New Friend","x":"🧒"},
+ "guest":{"z":"来客","e":"Visitor","x":"🧍"},
+ "littlekid":{"z":"小跟班","e":"Little Helper","x":"🧒"},
+ "monster":{"z":"冰雪怪物","e":"Snow Creature","x":"☃️"},
+ "snowgies":{"z":"迷你小雪人","e":"Snowgies","x":"❄️"},
+ "machine":{"z":"新发明","e":"Invention","x":"⚙️"},
+ "villagers":{"z":"镇民","e":"Villagers","x":"👥"},
+ "book":{"z":"魔法词书","e":"Magic Word Book","x":"📖"},
+ "narrator":{"z":"旁白","e":"Narrator","x":"✨"}
+},
+"groups":[
+ {"id":1,"z":"第一幕 · 电影与童年","e":"Act I · The Film & Childhood","n":[1,2],"note":"给不熟悉电影的读者打底，也交代姐妹疏远的根源"},
+ {"id":2,"z":"第二幕 · 节日与派对","e":"Act II · Feasts & Parties","n":[4,7,8,10,12,16],"note":"全书最集中一类，共同主题：心意 > 排场"},
+ {"id":3,"z":"第三幕 · 魔法与冒险","e":"Act III · Magic & Adventure","n":[5,6,14,17],"note":"冰雪魔法、地精水晶、跨越海峡，负责奇幻场面"},
+ {"id":4,"z":"第四幕 · 日常与成长","e":"Act IV · Everyday & Growing Up","n":[3,9,11,13,15,18],"note":"比赛、发明、交朋友、代理女王、当姐姐，落点在长大"}
+],
+"chapters":[
+{"n":1,"z":"冰雪奇缘","e":"Frozen","author":"Megan Ilnitzki","g":1,"comedy":false,
+ "place":{"z":"阿伦戴尔 · 北山","e":"Arendelle & the North Mountain"},"theme":"winter","x":"❄️",
+ "mainline":{"z":"艾莎在加冕日失控，把阿伦戴尔冻成永冬；安娜与克里斯托夫、斯特恩、奥拉夫翻山寻找她，最终以『为姐姐挡在前面』的真爱之举化解魔法，姐妹重归于好。","e":"Elsa's magic turns Arendelle into winter. Anna climbs the North Mountain with friends, steps in front of her sister, and the ice melts."},
+ "beats":[
+  {"act":{"z":"起 · 加冕日","e":"BEGINNING · Coronation Day"},"lines":[
+   {"w":"narrator","e":"Today is Elsa's coronation day. The castle gates are open!","z":"今天是艾莎的加冕日，城堡大门打开了！"},
+   {"w":"anna","e":"Gates! Open! People! I have waited my whole life for this.","z":"大门！开了！好多人！我等这一天等了好久。"},
+   {"w":"elsa","e":"Please, Anna. Keep my secret. My hands... they make snow.","z":"安娜，替我守住秘密。我的手……会变出雪。"}]},
+  {"act":{"z":"承 · 永冬与寻姐","e":"MIDDLE · Winter & the Climb"},"lines":[
+   {"w":"narrator","e":"A spark, a shout — and summer turns to winter in one night.","z":"一点火花、一声惊呼，一夜之间夏天变成了冬天。"},
+   {"w":"anna","e":"I will find my sister. She is up on the North Mountain.","z":"我要去找姐姐，她在北山上。"},
+   {"w":"olaf","e":"I am coming too! I was made on that mountain. I know the way. Mostly.","z":"我也去！我就是在那座山上被堆出来的，我认路……大概吧。"},
+   {"w":"kristoff","e":"Sven and I have a sled. Hold on tight.","z":"我和斯特恩有雪橇，抓紧了。"}]},
+  {"act":{"z":"转 · 挡在姐姐前面","e":"END · Stepping In Front"},"lines":[
+   {"w":"narrator","e":"A sword is raised. Anna does not run. She steps in front of Elsa.","z":"一把剑举起来了。安娜没有跑，她挡在了艾莎前面。"},
+   {"w":"anna","e":"I will not let anyone hurt my sister.","z":"我不让任何人伤害我姐姐。"},
+   {"w":"elsa","e":"You came back for me? Then let the winter go.","z":"你回来找我了？那，让冬天走吧。"},
+   {"w":"narrator","e":"The ice melts. The gates stay open. The sisters hold hands.","z":"冰化了，城门一直开着，姐妹俩牵起了手。"}]}],
+ "words":[{"e":"snow","z":"雪","x":"❄️"},{"e":"ice","z":"冰","x":"🧊"},{"e":"sister","z":"姐妹","x":"👭"},{"e":"mountain","z":"山","x":"⛰️"},{"e":"gate","z":"大门","x":"🚪"},{"e":"love","z":"爱","x":"💛"}],
+ "magic":{"e":"I will help my sister.","z":"我要帮助姐姐。","t":["I","will","help","my","sister."]},
+ "order":[{"e":"Elsa's secret is out. Summer turns to winter.","z":"艾莎的秘密被发现了，夏天变成永冬。"},
+   {"e":"Anna and her friends climb the North Mountain.","z":"安娜和朋友们翻越北山去找艾莎。"},
+   {"e":"Anna steps in front. The ice melts. The sisters are together again.","z":"安娜挡在姐姐前面，冰雪融化，姐妹重归于好。"}],
+ "choice":{"q":{"e":"Elsa tells you to go back. What do you do?","z":"找到艾莎时，她让你回去，你会怎么做？"},"opts":[
+   {"e":"Stay and hold her hand.","z":"留下来，牵住她的手。","tag":"陪伴","r":{"w":"anna","e":"Then I will stay right here.","z":"那我就留在这儿。"},"fx":{"x":"🤝","e":"Two hands, one pair of gloves.","z":"两只手，一副手套。"},"st":{"x":"🤝","z":"牵手贴纸","e":"Hand-in-Hand"}},
+   {"e":"Call everyone up the mountain.","z":"把大家都叫上山来。","tag":"借力","r":{"w":"kristoff","e":"Sven says we all fit on the sled.","z":"斯特恩说雪橇上坐得下所有人。"},"fx":{"x":"🛷","e":"The sled is suddenly very full.","z":"雪橇一下子挤满了人。"},"st":{"x":"🛷","z":"雪橇贴纸","e":"Full Sled"}},
+   {"e":"Say: I am not afraid of you.","z":"说：我不怕你。","tag":"坦诚","r":{"w":"elsa","e":"You are not afraid? ...That helps.","z":"你不怕我？……这有用。"},"fx":{"x":"💙","e":"The snow stops falling for one second.","z":"雪停了一秒钟。"},"st":{"x":"💙","z":"勇气贴纸","e":"Brave Heart"}}]},
+ "moment":{"x":"🌼","e":"A tiny flower pushes up through the ice.","z":"冰面上开出一朵小小的花。"},
+ "sticker":{"x":"❄️","z":"冰雪徽章","e":"Snowflake Badge"},
+ "egg":{"e":"A tiny door is drawn in the corner of the book — always open.","z":"词书边角画着一扇小门，一直开着。"}},
+
+{"n":2,"z":"童年时光","e":"Childhood Times","author":"Victoria Saxon","g":1,"comedy":false,
+ "place":{"z":"阿伦戴尔城堡 · 多年以前","e":"Arendelle Castle, Years Ago"},"theme":"castle","x":"⛄",
+ "mainline":{"z":"回到姐妹俩的童年：在城堡里堆雪人、滑冰，魔法是秘密乐趣；一次意外后地精帮了安娜，也让她忘掉魔法，国王从此关闭城门、隔离姐妹——解释了她们长大后为什么疏远。","e":"A look back: snowmen and skating in secret, an accident, the trolls' help, a forgotten memory, and closed gates — why the sisters grew apart."},
+ "beats":[
+  {"act":{"z":"起 · 秘密乐园","e":"BEGINNING · A Secret Playground"},"lines":[
+   {"w":"narrator","e":"Years ago, the castle was a playground after dark.","z":"很多年前，天黑以后的城堡就是游乐场。"},
+   {"w":"anna","e":"Again! Make snow in my room, Elsa! One more snowman!","z":"再来一次！艾莎，在我房间里变雪！再堆一个雪人！"},
+   {"w":"elsa","e":"Shh. Only us. This magic is our secret, and it is fun.","z":"嘘，只有我们俩知道。这个魔法是我们的秘密，真好玩。"}]},
+  {"act":{"z":"承 · 意外与地精","e":"MIDDLE · An Accident & the Trolls"},"lines":[
+   {"w":"narrator","e":"One slippery morning the magic goes too far, and Anna falls.","z":"一个滑溜溜的早晨，魔法玩过了头，安娜摔倒了。"},
+   {"w":"bulda","e":"We can help the little one. But the memory of magic must sleep.","z":"我们能帮这孩子，不过关于魔法的记忆，得让它睡过去。"},
+   {"w":"king","e":"Then the gates close. It is the only way I know to keep them safe.","z":"那城门就关上吧。我只知道这样能让她们安全。"}]},
+  {"act":{"z":"转 · 隔开的那些年","e":"END · The Years Behind a Door"},"lines":[
+   {"w":"anna","e":"Why does the door stay shut? Why will she not play?","z":"门为什么一直关着？她为什么不肯出来玩？"},
+   {"w":"narrator","e":"Anna does not remember the snow. Elsa remembers all of it.","z":"安娜不记得那些雪了，艾莎却全都记得。"},
+   {"w":"elsa","e":"I am sorry, Anna. One day I will open the door again.","z":"对不起，安娜。总有一天，我会再把门打开。"}]}],
+ "words":[{"e":"play","z":"玩","x":"🧸"},{"e":"secret","z":"秘密","x":"🤫"},{"e":"remember","z":"记得","x":"🧠"},{"e":"door","z":"门","x":"🚪"},{"e":"snowman","z":"雪人","x":"⛄"},{"e":"together","z":"一起","x":"👯"}],
+ "magic":{"e":"Let us play together.","z":"我们一起玩吧。","t":["Let","us","play","together."]},
+ "order":[{"e":"The sisters make snowmen and skate in secret.","z":"姐妹俩夜里偷偷用魔法堆雪人、滑冰。"},
+   {"e":"After an accident, the trolls help Anna and the magic is forgotten.","z":"一次意外后，地精帮了安娜，也让她忘了魔法。"},
+   {"e":"The gates close. The sisters grow apart — until years later.","z":"城门关上，姐妹渐渐疏远，直到多年以后。"}],
+ "choice":{"q":{"e":"If you were Elsa, what would you do behind the closed door?","z":"如果你是艾莎，关上房门以后会做什么？"},"opts":[
+   {"e":"Draw a snowflake on the door for Anna.","z":"在门上画一朵雪花留给安娜。","tag":"温柔","r":{"w":"elsa","e":"She may not know why, but she will see it.","z":"她也许不知道为什么，但她会看见。"},"fx":{"x":"❄️","e":"A small snowflake appears at eye height.","z":"门上齐眼高的地方多了一朵小雪花。"},"st":{"x":"❄️","z":"门上雪花","e":"Door Snowflake"}},
+   {"e":"Ask Bulda to come and play with Anna.","z":"请布达来陪安娜玩。","tag":"借力","r":{"w":"bulda","e":"I make a fine snowman. And a fine audience.","z":"我堆雪人很在行，当观众也很在行。"},"fx":{"x":"🪨","e":"A very round troll sits in the corridor.","z":"走廊里坐下了一只圆滚滚的地精。"},"st":{"x":"🪨","z":"地精石","e":"Troll Pebble"}},
+   {"e":"Say good morning through the door, every day.","z":"每天隔着门说一句早安。","tag":"坚持","r":{"w":"anna","e":"I hear something. Someone says good morning.","z":"我听见了什么，有人在说早安。"},"fx":{"x":"🌅","e":"The same small voice, every single morning.","z":"每个早晨，都有同一个小小的声音。"},"st":{"x":"🌅","z":"早安贴纸","e":"Good Morning"}}]},
+ "moment":{"x":"🚪","e":"A line of warm light appears under the door.","z":"门缝下透出一道暖暖的光。"},
+ "sticker":{"x":"🧊","z":"童年雪球","e":"Childhood Snowball"},
+ "egg":{"e":"Inside Bulda's crystal, two little girls are still laughing.","z":"布达的水晶里，还藏着两个小姑娘的笑声。"}},
+
+{"n":3,"z":"奥拉夫的完美夏日","e":"Olaf's Perfect Summer Day","author":"Jessica Julius","g":4,"comedy":true,
+ "place":{"z":"阿伦戴尔 · 夏日沙滩","e":"Arendelle Summer Beach"},"theme":"summer","x":"☀️",
+ "mainline":{"z":"奥拉夫终于迎来真正的夏天，兴致勃勃体验沙滩、阳光、冰淇淋和日光浴，完全不担心融化；艾莎用一个专属小雪云替他降温，故事以『他依然最喜欢夏天』收尾，基调轻快搞笑。","e":"Olaf finally gets a real summer — beach, sun, ice cream and sunbathing. Elsa gives him his own little snow cloud, and he still loves summer best."},
+ "beats":[
+  {"act":{"z":"起 · 夏天真的来了","e":"BEGINNING · Real Summer"},"lines":[
+   {"w":"narrator","e":"Real summer comes to Arendelle. Real, warm, sticky summer.","z":"真正的夏天来到阿伦戴尔，暖烘烘、黏乎乎的夏天。"},
+   {"w":"olaf","e":"Beach! Sun! Ice cream! I have waited my whole life for this day.","z":"沙滩！太阳！冰淇淋！我这辈子都在等这一天。"},
+   {"w":"anna","e":"Olaf... are you sure? It is very hot.","z":"奥拉夫……你确定吗？很热的。"}]},
+  {"act":{"z":"承 · 日光浴与小雪云","e":"MIDDLE · Sunbath & a Small Cloud"},"lines":[
+   {"w":"olaf","e":"I am doing a sun-bath. Is it working? I feel... crunchy.","z":"我在做日光浴。有效吗？我感觉……脆脆的。"},
+   {"w":"kristoff","e":"Sven, do not look. Also, do look. This is historic.","z":"斯特恩，别看。不对，快看，这具有历史意义。"},
+   {"w":"elsa","e":"Here. A little snow cloud, just for you. It follows you everywhere.","z":"给，一朵小雪云，只属于你，它会一直跟着你。"}]},
+  {"act":{"z":"转 · 还是最喜欢夏天","e":"END · Still Loves Summer Best"},"lines":[
+   {"w":"olaf","e":"So I get summer AND my own cloud? This is the best day.","z":"那我既有夏天，又有自己的云？今天最棒了。"},
+   {"w":"anna","e":"Do you still like summer, even now?","z":"就算这样，你还喜欢夏天吗？"},
+   {"w":"olaf","e":"I love it more. I never melted, and I never missed a sunset.","z":"更喜欢了。我一次都没化，也一次都没错过夕阳。"}]}],
+ "words":[{"e":"sun","z":"太阳","x":"☀️"},{"e":"hot","z":"热","x":"🥵"},{"e":"beach","z":"沙滩","x":"🏖️"},{"e":"ice cream","z":"冰淇淋","x":"🍦"},{"e":"cloud","z":"云","x":"☁️"},{"e":"happy","z":"开心","x":"😄"}],
+ "magic":{"e":"I am happy in the sun.","z":"我在太阳下很开心。","t":["I","am","happy","in","the","sun."]},
+ "order":[{"e":"Real summer arrives and Olaf runs straight to the beach.","z":"夏天真的来了，奥拉夫直奔沙滩。"},
+   {"e":"He sunbathes and eats ice cream while everyone worries.","z":"他晒太阳、吃冰淇淋，大家都有点担心。"},
+   {"e":"Elsa gives him his own snow cloud; he still loves summer best.","z":"艾莎给他一朵专属小雪云，他说还是最喜欢夏天。"}],
+ "choice":{"q":{"e":"Olaf wants to stay in the sun all day. What do you do?","z":"奥拉夫想在太阳下待一整天，你会？"},"opts":[
+   {"e":"Find him a little cloud.","z":"帮他找一朵小云。","tag":"照顾","r":{"w":"elsa","e":"Perfect. It can follow him all afternoon.","z":"正好，它能陪他一整个下午。"},"fx":{"x":"☁️","e":"One small cloud, one very happy snowman.","z":"一朵小云，一个很开心的雪人。"},"st":{"x":"☁️","z":"小雪云","e":"Little Cloud"}},
+   {"e":"Sit on the sand beside him.","z":"陪他一起坐在沙滩上。","tag":"陪伴","r":{"w":"olaf","e":"A friend in the sun! Now it is a party.","z":"太阳底下有个朋友！这就算派对啦。"},"fx":{"x":"🏖️","e":"Two shadows, one very long afternoon.","z":"两道影子，一个长长的下午。"},"st":{"x":"🏖️","z":"沙滩贴纸","e":"Beach Day"}},
+   {"e":"Make him a hat out of ice.","z":"用冰给他做一顶帽子。","tag":"发明","r":{"w":"kristoff","e":"It will last an hour. He will love the hour.","z":"它撑得了一个钟头，他会喜欢这一个钟头。"},"fx":{"x":"🧊","e":"A hat that drips, and a hat that is loved.","z":"一顶会滴水的帽子，一顶被珍爱着的帽子。"},"st":{"x":"🧊","z":"冰帽子","e":"Ice Hat"}}]},
+ "moment":{"x":"🌅","e":"The little snow cloud floats up. Olaf turns in a circle under the sunset.","z":"小雪云飘起来，奥拉夫在夕阳下转了个圈。"},
+ "sticker":{"x":"🍦","z":"夏日冰淇淋","e":"Summer Ice Cream"},
+ "egg":{"e":"A tiny letter O is stitched onto the little snow cloud.","z":"小雪云上绣着一个小小的『O』。"}},
+
+{"n":4,"z":"完美的生日","e":"The Perfect Birthday","author":"Calliope Glass","g":2,"comedy":false,
+ "place":{"z":"城堡 · 生日会场","e":"Castle Birthday Hall"},"theme":"party","x":"🎂",
+ "mainline":{"z":"安娜一心想给艾莎办一个『毫无瑕疵』的生日：亲手做蛋糕、布置会场、排练流程，结果意外接连不断；她一度以为搞砸了，但艾莎告诉她，妹妹花的心思本身就是最好的礼物——完美不在细节零失误，而在心意。","e":"Anna plans a flawless birthday for Elsa. Everything goes wrong, but Elsa tells her the care she put in IS the gift."},
+ "beats":[
+  {"act":{"z":"起 · 一切都要完美","e":"BEGINNING · It Must Be Perfect"},"lines":[
+   {"w":"anna","e":"It must be perfect. Cake, candles, curtains — in that order.","z":"一定要完美。蛋糕、蜡烛、帘子，按这个顺序来。"},
+   {"w":"elsa","e":"You have rehearsed the curtains?","z":"你还排练了帘子？"},
+   {"w":"anna","e":"Twice.","z":"两遍。"}]},
+  {"act":{"z":"承 · 意外接连不断","e":"MIDDLE · Everything Goes Wrong"},"lines":[
+   {"w":"narrator","e":"The cake leans. There are too many candles. The banner is upside down.","z":"蛋糕歪了，蜡烛多了一倍，彩旗挂反了。"},
+   {"w":"olaf","e":"I like the leaning cake. It is waving at us.","z":"我喜欢歪蛋糕，它在跟我们招手。"},
+   {"w":"anna","e":"It is ruined. All of it. I wanted it perfect.","z":"全搞砸了。我本来想让它完完美美的。"}]},
+  {"act":{"z":"转 · 心意就是礼物","e":"END · The Care Is the Gift"},"lines":[
+   {"w":"elsa","e":"Anna. You spent the whole day on me. That IS the gift.","z":"安娜，你一整天都花在我身上，这就是礼物啊。"},
+   {"w":"anna","e":"But the cake...","z":"可是蛋糕……"},
+   {"w":"elsa","e":"The cake is waving at us. I love it.","z":"它在跟我们招手呢。我很喜欢。"}]}],
+ "words":[{"e":"cake","z":"蛋糕","x":"🎂"},{"e":"candle","z":"蜡烛","x":"🕯️"},{"e":"gift","z":"礼物","x":"🎁"},{"e":"perfect","z":"完美的","x":"✨"},{"e":"surprise","z":"惊喜","x":"🎉"},{"e":"love","z":"爱","x":"💛"}],
+ "magic":{"e":"This is for you.","z":"这是送给你的。","t":["This","is","for","you."]},
+ "order":[{"e":"Anna rehearses every single detail of the birthday.","z":"安娜把生日的每一样都排练得妥妥当当。"},
+   {"e":"One accident after another — she thinks she has ruined it.","z":"意外一个接一个，她觉得全搞砸了。"},
+   {"e":"Elsa says the care Anna put in is the best gift of all.","z":"艾莎说，安娜花的心思才是最好的礼物。"}],
+ "choice":{"q":{"e":"The banner is upside down and the cake leans. What do you say?","z":"彩旗挂反了、蛋糕歪了，你会说什么？"},"opts":[
+   {"e":"Bring it over: I made this for you.","z":"端上去说：这是我给你做的。","tag":"心意","r":{"w":"elsa","e":"The cake leans. Those words do not.","z":"蛋糕是歪的，这句话不是。"},"fx":{"x":"💌","e":"A crooked cake, a very straight sentence.","z":"歪歪的蛋糕，端端正正的一句话。"},"st":{"x":"💌","z":"心意卡","e":"Heart Card"}},
+   {"e":"Quickly straighten the cake first.","z":"先偷偷把蛋糕扶正。","tag":"补救","r":{"w":"anna","e":"Shh — no, wait. Actually... leave it.","z":"嘘——别，等等……算了，就歪着吧。"},"fx":{"x":"🎂","e":"It leans back. Everyone pretends not to notice.","z":"它又歪回去了，大家都装作没看见。"},"st":{"x":"🎂","z":"歪蛋糕","e":"Leaning Cake"}},
+   {"e":"Say: I am sorry, it is not perfect.","z":"说：对不起，没做好。","tag":"坦诚","r":{"w":"elsa","e":"Sorry? For a cake that is waving at me?","z":"道歉？为一块在跟我招手的蛋糕？"},"fx":{"x":"🫶","e":"Elsa cuts the first slice anyway.","z":"艾莎还是切下了第一块。"},"st":{"x":"🫶","z":"拥抱贴纸","e":"Warm Hug"}}]},
+ "moment":{"x":"🕯️","e":"Every candle lights at once. Nobody checks the banner again.","z":"蜡烛一齐亮起，再也没有人去看彩旗。"},
+ "sticker":{"x":"🎂","z":"生日蜡烛","e":"Birthday Candle"},
+ "egg":{"e":"On the back of the rehearsal list: Do not forget to have fun.","z":"排练单背面写着：别忘记玩。"}},
+
+{"n":5,"z":"海的那一边","e":"Across the Sea","author":"Brittany Rubiano","g":3,"comedy":false,
+ "place":{"z":"海峡 · 对岸的国度","e":"Across the Strait"},"theme":"sea","x":"⛵",
+ "mainline":{"z":"以『海对岸』为线索的旅行故事：姐妹俩乘船离开阿伦戴尔，去探访海峡另一边的国度与家族旧地，沿途遇到新的风土与人情；重点不在冒险打斗，而在『走出去看世界』与『家在哪里』的对照。","e":"The sisters sail to the land across the sea, to their family's old home. New harbours, new customs — and a question: where is home?"},
+ "beats":[
+  {"act":{"z":"起 · 登船","e":"BEGINNING · Setting Sail"},"lines":[
+   {"w":"anna","e":"A boat! We are going across the sea.","z":"有船！我们要去海的那一边啦。"},
+   {"w":"elsa","e":"It is where our family's oldest stories began.","z":"我们家最老的故事，就是从那儿开始的。"}]},
+  {"act":{"z":"承 · 一路的新风土","e":"MIDDLE · New Harbours"},"lines":[
+   {"w":"narrator","e":"Every harbour has its own hello, its own bread, its own song.","z":"每一个港口，都有自己的问候、自己的面包、自己的歌。"},
+   {"w":"anna","e":"I tried their bread. I tried their word for friend. I got both wrong.","z":"我尝了他们的面包，也试了他们说『朋友』的那个词，两个都没弄对。"},
+   {"w":"elsa","e":"They laughed and gave you a second piece. That is a hello too.","z":"他们笑着又给了你一块。那也是一种问候呀。"}]},
+  {"act":{"z":"转 · 家在哪里","e":"END · Where Is Home"},"lines":[
+   {"w":"anna","e":"So which place is home?","z":"那到底哪里才是家？"},
+   {"w":"elsa","e":"The one we sail back to. And the one we are standing in.","z":"我们要回去的那个，还有我们正站着的这个。"},
+   {"w":"anna","e":"Then we have two homes. Good. I was worried.","z":"那我们有两个家。太好了，我刚才还担心呢。"}]}],
+ "words":[{"e":"sea","z":"海","x":"🌊"},{"e":"boat","z":"船","x":"⛵"},{"e":"harbour","z":"港口","x":"⚓"},{"e":"far","z":"远","x":"🧭"},{"e":"home","z":"家","x":"🏠"},{"e":"world","z":"世界","x":"🌍"}],
+ "magic":{"e":"We go home together.","z":"我们一起回家。","t":["We","go","home","together."]},
+ "order":[{"e":"The sisters sail to their family's old land across the sea.","z":"姐妹登船，去海峡另一边的家族旧地。"},
+   {"e":"Along the way they meet new harbours, food and greetings.","z":"一路遇见新的港口、食物和问候。"},
+   {"e":"They discover home can be two places at once.","z":"她们发现，『家』可以同时是两个地方。"}],
+ "choice":{"q":{"e":"You step off at a harbour where nobody knows you. First thing?","z":"到了一个谁也不认识你的港口，第一步做什么？"},"opts":[
+   {"e":"Learn how to say hello there.","z":"先学会当地那句『你好』。","tag":"语言","r":{"w":"anna","e":"Say it with me. Slowly. I will get it wrong first.","z":"跟我一起念，慢慢来，我先念错一遍。"},"fx":{"x":"👋","e":"One new word, three new smiles.","z":"一个新词，三个笑脸。"},"st":{"x":"👋","z":"问候贴纸","e":"New Hello"}},
+   {"e":"Climb somewhere high and look at everything.","z":"先找个最高的地方看全景。","tag":"观察","r":{"w":"elsa","e":"From up here the whole harbour looks like one map.","z":"从这儿看，整座港口像一张地图。"},"fx":{"x":"🔭","e":"Roofs, boats, and one very small bakery.","z":"屋顶、船，还有一家很小的面包店。"},"st":{"x":"🔭","z":"望远镜","e":"Spyglass"}},
+   {"e":"Give someone a small gift from Arendelle.","z":"先送一份从阿伦戴尔带来的小礼物。","tag":"分享","r":{"w":"villagers","e":"For us? Then you must come in, you must.","z":"给我们的？那快进来坐，一定要进来。"},"fx":{"x":"🎁","e":"A door opens before anyone knocks.","z":"还没敲门，门就开了。"},"st":{"x":"🎁","z":"小礼物","e":"Small Gift"}}]},
+ "moment":{"x":"⛵","e":"The sail fills. The whole sea turns gold.","z":"船帆鼓起来，整片海变成了金色。"},
+ "sticker":{"x":"🧭","z":"小罗盘","e":"Little Compass"},
+ "egg":{"e":"On the old map, Arendelle is drawn as a very small heart.","z":"旧地图上，阿伦戴尔被画成一颗小小的心。"}},
+
+{"n":6,"z":"布达的水晶","e":"Bulda's Crystal","author":"Apple Jordan","g":3,"comedy":false,
+ "place":{"z":"地精山谷","e":"Troll Valley"},"theme":"mountain","x":"💎",
+ "mainline":{"z":"地精布达在山里发现一块特别的水晶，想把它送给『最需要它的人』；围绕这块水晶，地精们讲起『用晶体见证真爱』的老传统，最后水晶的去处出人意料，落点在家人之间的爱。","e":"Bulda finds a special crystal for 'the one who needs it most'. The trolls recall their old tradition, and the crystal ends up somewhere nobody expects — with family."},
+ "beats":[
+  {"act":{"z":"起 · 山里的一块水晶","e":"BEGINNING · A Crystal in the Mountain"},"lines":[
+   {"w":"bulda","e":"Look what the mountain gave me. One crystal, brighter than the rest.","z":"看山里给我的东西。一块水晶，比别的都亮。"},
+   {"w":"trolls","e":"Who is it for? Who is it FOR?","z":"送给谁呀？到底送给谁？"}]},
+  {"act":{"z":"承 · 老传统","e":"MIDDLE · An Old Tradition"},"lines":[
+   {"w":"bulda","e":"Our old way: a crystal sits with a true love until it glows.","z":"我们的老规矩：水晶陪着一份真心的爱，直到它发光。"},
+   {"w":"olaf","e":"A queen? A hero? Someone with a very big cake?","z":"女王？英雄？还是有一个超大蛋糕的人？"},
+   {"w":"bulda","e":"So tell me — who needs it most?","z":"那你们说说，谁最需要它？"}]},
+  {"act":{"z":"转 · 出人意料的去处","e":"END · An Unexpected Doorstep"},"lines":[
+   {"w":"narrator","e":"The crystal is left at Kristoff's door — the one who always says he needs nothing.","z":"水晶被放在克里斯托夫家门口——那个总说自己什么都不缺的人。"},
+   {"w":"kristoff","e":"Sven is sitting on it. He says it is warm.","z":"斯特恩坐在上面了，它说暖暖的。"},
+   {"w":"bulda","e":"Then it is working. Family is like that.","z":"那就对了。家人就是这样。"}]}],
+ "words":[{"e":"crystal","z":"水晶","x":"💎"},{"e":"mountain","z":"山","x":"⛰️"},{"e":"glow","z":"发光","x":"✨"},{"e":"family","z":"家人","x":"👨‍👩‍👧"},{"e":"need","z":"需要","x":"🙏"},{"e":"warm","z":"温暖的","x":"🔥"}],
+ "magic":{"e":"This is for my family.","z":"这是给我家人的。","t":["This","is","for","my","family."]},
+ "order":[{"e":"Bulda finds one crystal brighter than all the others.","z":"布达在山里发现一块特别亮的水晶。"},
+   {"e":"The trolls recall the old tradition and guess who should get it.","z":"地精们讲起『水晶见证真爱』的老传统，猜该送给谁。"},
+   {"e":"It lands at the most unexpected door — and warms a whole family.","z":"水晶被放在最想不到的人门口，暖了一家人。"}],
+ "choice":{"q":{"e":"If the crystal were yours to give, who gets it?","z":"如果由你来送这块水晶，送给谁？"},"opts":[
+   {"e":"The person who says they need nothing.","z":"总说『我什么都不缺』的人。","tag":"体贴","r":{"w":"bulda","e":"Ah. You have been listening.","z":"啊，你有在听。"},"fx":{"x":"💎","e":"A small glow appears under a quiet door.","z":"一扇安静的门下，亮起一小片光。"},"st":{"x":"💎","z":"水晶碎片","e":"Crystal Shard"}},
+   {"e":"Someone new in town with no friends yet.","z":"刚到镇上、还没有朋友的人。","tag":"欢迎","r":{"w":"anna","e":"I know that feeling. I will go with you.","z":"我知道那感觉，我陪你一起去。"},"fx":{"x":"👋","e":"The crystal is handed over with two hands.","z":"水晶被双手递了过去。"},"st":{"x":"👋","z":"欢迎贴纸","e":"Welcome"}},
+   {"e":"The one who helps everyone and is never thanked.","z":"每天帮大家做事、却没人谢过的人。","tag":"感谢","r":{"w":"trolls","e":"We never thought of that one. Not once.","z":"我们一次都没想到那个人。"},"fx":{"x":"🙏","e":"For the first time all day, somebody sits down.","z":"那一整天里，那个人第一次坐了下来。"},"st":{"x":"🙏","z":"谢谢贴纸","e":"Thank You"}}]},
+ "moment":{"x":"✨","e":"The crystal glows. A warm little circle of light sits on the doorstep.","z":"水晶亮起来，门口落了一小圈暖光。"},
+ "sticker":{"x":"💎","z":"布达的水晶","e":"Bulda's Crystal"},
+ "egg":{"e":"Tiny words inside the crystal: For the one nobody has thanked yet.","z":"水晶里有一行小字：给还没被谢过的人。"}},
+
+{"n":7,"z":"冰雪发烧","e":"Frozen Fever","author":"Meredith Rusu","g":2,"comedy":false,
+ "place":{"z":"阿伦戴尔 · 钟楼","e":"Arendelle Clock Tower"},"theme":"party","x":"🤧",
+ "mainline":{"z":"2015 年同名动画短片的绘本版：安娜生日，感冒的艾莎坚持要办完美派对，可她每打一个喷嚏就喷出一群迷你小雪人；小雪人们一路捣乱，姐妹俩追到钟楼，安娜在发烧中被『照顾』得哭笑不得——最后是艾莎病倒、安娜反过来照顾她。","e":"It is Anna's birthday. Elsa has a cold and insists on a perfect party; every sneeze makes tiny snowmen. They chase them to the clock tower — and in the end Anna takes care of Elsa."},
+ "beats":[
+  {"act":{"z":"起 · 带病办派对","e":"BEGINNING · A Party with a Cold"},"lines":[
+   {"w":"elsa","e":"It is YOUR birthday, Anna. I am fine. Just a small... A-CHOO!","z":"今天是你的生日，安娜。我没事，就是有一点……阿——嚏！"},
+   {"w":"narrator","e":"Five tiny snowmen land in the cake.","z":"五个迷你小雪人落进了蛋糕里。"},
+   {"w":"anna","e":"Elsa. You are sneezing little snowmen.","z":"艾莎，你在打喷嚏打出小雪人。"}]},
+  {"act":{"z":"承 · 一路追到钟楼","e":"MIDDLE · Chase to the Clock Tower"},"lines":[
+   {"w":"snowgies","e":"! ! !","z":"！ ！ ！"},
+   {"w":"anna","e":"They have the bunting. And the cake. And my hat.","z":"彩带被拿走了，蛋糕也是，还有我的帽子。"},
+   {"w":"elsa","e":"I will fix it. A-CHOO!","z":"我来弄好。阿——嚏！"},
+   {"w":"narrator","e":"By noon the whole parade has climbed the clock tower.","z":"到了中午，这一整支队伍已经爬上了钟楼。"}]},
+  {"act":{"z":"转 · 换我来照顾你","e":"END · Now I Take Care of You"},"lines":[
+   {"w":"narrator","e":"At last Elsa sits down. The party is very quiet.","z":"艾莎终于坐下了，派对安安静静的。"},
+   {"w":"anna","e":"Now you rest. I will take care of YOU.","z":"现在你休息，换我来照顾你。"},
+   {"w":"elsa","e":"But it is your party.","z":"可今天是你的生日呀。"},
+   {"w":"anna","e":"Best party ever. I got to be the big sister for one day.","z":"最棒的生日了。我当了一天的姐姐。"}]}],
+ "words":[{"e":"birthday","z":"生日","x":"🎂"},{"e":"sneeze","z":"打喷嚏","x":"🤧"},{"e":"tiny","z":"小小的","x":"🔹"},{"e":"care","z":"照顾","x":"🫂"},{"e":"rest","z":"休息","x":"🛏️"},{"e":"party","z":"派对","x":"🎉"}],
+ "magic":{"e":"I can take care of you.","z":"我可以照顾你。","t":["I","can","take","care","of","you."]},
+ "order":[{"e":"It is Anna's birthday; Elsa has a cold but insists on a perfect party.","z":"安娜生日，感冒的艾莎坚持要办完美派对。"},
+   {"e":"Every sneeze makes tiny snowmen, who cause chaos all the way to the clock tower.","z":"每个喷嚏都喷出迷你小雪人，一路捣乱追到钟楼。"},
+   {"e":"Elsa finally falls ill, and Anna takes care of her instead.","z":"艾莎病倒，换安娜反过来照顾她。"}],
+ "choice":{"q":{"e":"The snowgies have run off with all the bunting. What now?","z":"小雪人把彩带全拖走了，怎么办？"},"opts":[
+   {"e":"Help Elsa sit down first.","z":"先扶艾莎坐下。","tag":"照顾","r":{"w":"elsa","e":"One minute. Then I will help. ...Two minutes.","z":"一分钟就好，然后我来帮忙……再两分钟。"},"fx":{"x":"🫖","e":"A hot cup arrives before anything else does.","z":"别的东西还没到，一杯热茶先到了。"},"st":{"x":"🫖","z":"热茶贴纸","e":"Hot Tea"}},
+   {"e":"Line the snowgies up as a new bunting.","z":"让小雪人自己排成新彩带。","tag":"创意","r":{"w":"olaf","e":"They are much better at holding still like this.","z":"这样排着，它们可比刚才安分多了。"},"fx":{"x":"🎏","e":"The best decoration in Arendelle, slightly wiggling.","z":"全阿伦戴尔最好看的装饰，还会轻轻扭。"},"st":{"x":"🎏","z":"彩带贴纸","e":"Snowgie Bunting"}},
+   {"e":"Ask everyone to help tidy up together.","z":"请大家一起来收拾。","tag":"借力","r":{"w":"kristoff","e":"Sven has already collected eleven of them.","z":"斯特恩已经捡回来十一只了。"},"fx":{"x":"🧹","e":"The square is clean in four minutes.","z":"广场四分钟就干净了。"},"st":{"x":"🧹","z":"小扫帚","e":"Little Broom"}}]},
+ "moment":{"x":"🛏️","e":"Elsa is tucked in. Anna sits on the edge of the bed with the cake.","z":"艾莎被盖得暖暖的，安娜端着蛋糕坐在床边。"},
+ "sticker":{"x":"🤧","z":"小喷嚏","e":"Tiny Sneeze"},
+ "egg":{"e":"One snowgie is still up in the clock tower, still sneezing.","z":"钟楼上还挂着一只漏网的小雪人，还在打喷嚏。"}},
+
+{"n":8,"z":"皇家睡衣派对","e":"A Royal Sleepover","author":"Brittany Rubiano","g":2,"comedy":false,
+ "place":{"z":"城堡 · 深夜","e":"Castle, After Midnight"},"theme":"night","x":"🌙",
+ "mainline":{"z":"城堡里的一场皇家睡衣派对：枕头大战、讲吓人的故事、半夜偷溜去厨房做点心，规矩和玩心不断碰撞；结局通常是闹到深夜、被仆人或家长抓个正着，但姐妹（或朋友们）觉得值了。","e":"A royal sleepover: pillow fights, scary stories, a midnight trip to the kitchen. Rules and fun keep bumping into each other — and getting caught was worth it."},
+ "beats":[
+  {"act":{"z":"起 · 两条规矩","e":"BEGINNING · Two Rules"},"lines":[
+   {"w":"anna","e":"Rule one: this is a ROYAL sleepover. Rule two: pillows are allowed.","z":"第一条：这是皇家睡衣派对。第二条：可以用枕头。"},
+   {"w":"elsa","e":"Those two rules disagree.","z":"这两条互相打架呀。"},
+   {"w":"olaf","e":"I would like to be a pillow. For research.","z":"我想当一回枕头，做研究用。"}]},
+  {"act":{"z":"承 · 枕头、故事与厨房","e":"MIDDLE · Pillows, Stories, Kitchen"},"lines":[
+   {"w":"narrator","e":"Pillows fly. Then comes a scary story about a very lost reindeer.","z":"枕头飞了起来，接着是一个『很吓人』的故事，讲的是一只迷路的小驯鹿。"},
+   {"w":"anna","e":"That was not scary. That was Sven's Tuesday.","z":"那一点都不吓人，那是斯特恩的星期二。"},
+   {"w":"narrator","e":"At midnight the kitchen makes a very loud noise.","z":"半夜，厨房里传出好大一声响。"}]},
+  {"act":{"z":"转 · 被抓，但值了","e":"END · Caught, and Worth It"},"lines":[
+   {"w":"villagers","e":"It is past midnight.","z":"已经过午夜了。"},
+   {"w":"narrator","e":"There is flour on three faces and one crown.","z":"三张脸上和一顶王冠上，全都是面粉。"},
+   {"w":"anna","e":"Yes. And it was worth it.","z":"是的。不过很值。"},
+   {"w":"elsa","e":"...Yes.","z":"……嗯，很值。"}]}],
+ "words":[{"e":"pillow","z":"枕头","x":"🛏️"},{"e":"night","z":"夜晚","x":"🌙"},{"e":"story","z":"故事","x":"📖"},{"e":"kitchen","z":"厨房","x":"🍳"},{"e":"quiet","z":"安静的","x":"🤫"},{"e":"fun","z":"好玩","x":"🥳"}],
+ "magic":{"e":"We had fun tonight.","z":"今晚我们玩得很开心。","t":["We","had","fun","tonight."]},
+ "order":[{"e":"The royal sleepover begins: pillow fights and scary stories.","z":"皇家睡衣派对开场：枕头大战、讲吓人的故事。"},
+   {"e":"At midnight they sneak into the kitchen to make a snack.","z":"半夜偷溜去厨房做点心，规矩和玩心撞在一起。"},
+   {"e":"They are caught long after bedtime — and everyone agrees it was worth it.","z":"闹到深夜被抓个正着，可大家都觉得值了。"}],
+ "choice":{"q":{"e":"It is your turn to tell the scary story. What do you tell?","z":"轮到你讲『吓人的故事』了，你会讲什么？"},"opts":[
+   {"e":"A story that is not scary at all.","z":"一个其实一点也不可怕的故事。","tag":"体贴","r":{"w":"olaf","e":"The scariest part was the carrot. I am still thinking about it.","z":"最吓人的是那根胡萝卜，我到现在还在想。"},"fx":{"x":"🥕","e":"Nobody hides under a blanket. Nobody needs to.","z":"没有人钻进毯子，也不需要。"},"st":{"x":"🥕","z":"胡萝卜贴纸","e":"Not-Scary Carrot"}},
+   {"e":"Let everyone add one sentence each.","z":"让大家一人接一句。","tag":"共创","r":{"w":"anna","e":"Wait — how did the reindeer get a crown?","z":"等等——驯鹿怎么戴上了王冠？"},"fx":{"x":"📖","e":"The story now has nine authors and no ending.","z":"这个故事现在有九个作者，没有结尾。"},"st":{"x":"📖","z":"故事贴纸","e":"Nine Authors"}},
+   {"e":"Turn the lamp on right after: See? All fine.","z":"讲完立刻开灯：看，没事吧。","tag":"安抚","r":{"w":"elsa","e":"That was the best part of the story.","z":"刚才那一下，是整个故事最好的部分。"},"fx":{"x":"💡","e":"The room is bright, and everybody laughs at once.","z":"屋子亮了，所有人同时笑出声。"},"st":{"x":"💡","z":"小夜灯","e":"Little Lamp"}}]},
+ "moment":{"x":"🌙","e":"The pillows are stacked into a small, crooked castle.","z":"枕头被堆成了一座歪歪的小城堡。"},
+ "sticker":{"x":"🌙","z":"皇家小夜灯","e":"Royal Night Light"},
+ "egg":{"e":"One extra snack is left on the counter, for the person who caught them.","z":"厨房台面上留着一份给管家的小点心。"}},
+
+{"n":9,"z":"一场凉爽的比赛","e":"A Cool Contest","author":"Tracey West","g":4,"comedy":true,
+ "place":{"z":"阿伦戴尔 · 冰雕广场","e":"Ice Carving Square"},"theme":"winter","x":"🏆",
+ "mainline":{"z":"一场『凉爽』主题的比赛在阿伦戴尔开场（冰雪、冰雕、雪上竞技），参赛者各出奇招、互不相让；奥拉夫和斯特恩这类『编外选手』往往成为笑点，最后大家发现比起输赢，一起玩更有意思。","e":"A 'cool' contest opens in Arendelle. Everyone has a trick; Olaf and Sven steal the show as unofficial entries — and playing together beats winning."},
+ "beats":[
+  {"act":{"z":"起 · 各出奇招","e":"BEGINNING · Everyone Has a Trick"},"lines":[
+   {"w":"anna","e":"A cool contest! Ice carving, snow racing, biggest snowball!","z":"凉爽比赛开始！冰雕、雪上赛跑、最大雪球！"},
+   {"w":"oaken","e":"Yoo-hoo! I am judging! I also made a trophy!","z":"哟嚯！我来当裁判！我还做了个奖杯！"},
+   {"w":"olaf","e":"Am I a contestant? I am made of snow. I have an advantage.","z":"我能参赛吗？我本身就是雪做的，我占优势。"}]},
+  {"act":{"z":"承 · 编外选手","e":"MIDDLE · Unofficial Entries"},"lines":[
+   {"w":"kristoff","e":"Sven is not signed up. Sven is winning.","z":"斯特恩没报名，斯特恩正领先。"},
+   {"w":"narrator","e":"A reindeer is balancing an ice sculpture on his antlers. Nobody knows the rules any more.","z":"一只驯鹿用鹿角顶着冰雕，已经没人记得规则了。"},
+   {"w":"elsa","e":"I think we have left the contest and arrived at something better.","z":"我们好像已经不在比赛里了，改成了更好玩的事。"}]},
+  {"act":{"z":"转 · 一起玩更有意思","e":"END · Together Beats Winning"},"lines":[
+   {"w":"anna","e":"So... who won?","z":"那……谁赢了？"},
+   {"w":"elsa","e":"Everyone. Look at it.","z":"所有人啊，你看看。"},
+   {"w":"olaf","e":"I came last AND first. Both feel great.","z":"我既是最后一名又是第一名，两个都挺好。"}]}],
+ "words":[{"e":"contest","z":"比赛","x":"🏆"},{"e":"race","z":"赛跑","x":"🏃"},{"e":"carve","z":"雕刻","x":"🗿"},{"e":"win","z":"赢","x":"🥇"},{"e":"team","z":"队伍","x":"🤝"},{"e":"laugh","z":"笑","x":"😂"}],
+ "magic":{"e":"We play as a team.","z":"我们一队一起玩。","t":["We","play","as","a","team."]},
+ "order":[{"e":"A cool contest opens and everyone shows off a trick.","z":"阿伦戴尔办起『凉爽』比赛，大家各出奇招。"},
+   {"e":"Olaf and Sven, not even signed up, become the biggest joke.","z":"奥拉夫和斯特恩这两个编外选手，成了最大的笑点。"},
+   {"e":"Fixing the fallen ice sculpture together is more fun than winning.","z":"比起谁赢，一起把塌掉的冰雕修好更好玩。"}],
+ "choice":{"q":{"e":"Half the ice sculpture has collapsed, but the race goes on. What do you do?","z":"冰雕塌了一半，比赛还在继续，你会？"},"opts":[
+   {"e":"Stop and help your opponent rebuild it.","z":"停下来帮对手一起修。","tag":"协作","r":{"w":"kristoff","e":"Now it has two sets of fingerprints. Better.","z":"现在上面有两双手的指印了，更好看。"},"fx":{"x":"🤝","e":"The sculpture stands again, slightly lopsided.","z":"冰雕重新立起来了，有一点点歪。"},"st":{"x":"🤝","z":"协作贴纸","e":"Teamwork"}},
+   {"e":"Turn the broken half into a brand new shape.","z":"把塌掉的那半改成全新造型。","tag":"创意","r":{"w":"olaf","e":"It was a swan. Now it is a swan wearing a hat.","z":"本来是天鹅，现在是戴帽子的天鹅。"},"fx":{"x":"🎩","e":"The judges have no category for this.","z":"裁判们找不到对应的奖项。"},"st":{"x":"🎩","z":"创意贴纸","e":"New Shape"}},
+   {"e":"Declare that everyone wins this round.","z":"宣布这一项所有人都得奖。","tag":"重新定义","r":{"w":"oaken","e":"Yoo-hoo! Then I need eighteen more trophies!","z":"哟嚯！那我还得再做十八个奖杯！"},"fx":{"x":"🏅","e":"The trophy table becomes the longest table in town.","z":"奖杯桌成了全镇最长的一张桌子。"},"st":{"x":"🏅","z":"全员奖牌","e":"Everyone Wins"}}]},
+ "moment":{"x":"🏆","e":"The trophy is placed in the middle of the mended ice sculpture.","z":"奖杯被放到修好的冰雕正中间。"},
+ "sticker":{"x":"🗿","z":"小冰雕","e":"Little Ice Carving"},
+ "egg":{"e":"At the bottom of the sign-up sheet: one hoof-print, signed Sven.","z":"报名表最下面有一枚蹄印签名：斯特恩。"}},
+
+{"n":10,"z":"克里斯托夫的生日会","e":"Kristoff's Birthday Bash","author":"Calliope Glass","g":2,"comedy":false,
+ "place":{"z":"城堡 · 生日会","e":"Castle Birthday Bash"},"theme":"party","x":"🎁",
+ "mainline":{"z":"安娜和艾莎决定给克里斯托夫办一场生日会，可他这个常年跟驯鹿、冰块打交道的人完全不习惯被众人围着庆祝；惊喜、礼物、蛋糕接连上阵，场面一度尴尬又混乱，最后他还是被这份热闹打动。","e":"Anna and Elsa throw Kristoff a birthday party. He is not used to being celebrated; surprises, gifts and cake make it awkward and chaotic — and in the end, he is touched."},
+ "beats":[
+  {"act":{"z":"起 · 他不习惯","e":"BEGINNING · Not Used to It"},"lines":[
+   {"w":"anna","e":"It is Kristoff's birthday! Surprise, cake, presents — in that order.","z":"今天是克里斯托夫生日！惊喜、蛋糕、礼物，按这个顺序。"},
+   {"w":"kristoff","e":"Or... we could just... not?","z":"或者……我们能不能……就不办了？"},
+   {"w":"narrator","e":"Sven nods. Twice.","z":"斯特恩点了两次头。"}]},
+  {"act":{"z":"承 · 又尴尬又热闹","e":"MIDDLE · Awkward and Loud"},"lines":[
+   {"w":"villagers","e":"SURPRISE!","z":"惊喜！"},
+   {"w":"narrator","e":"The presents reach his chin. The cake is wider than the table.","z":"礼物堆到了他下巴，蛋糕比桌子还宽。"},
+   {"w":"kristoff","e":"This is a lot of people looking at me.","z":"好多人在看着我啊。"},
+   {"w":"olaf","e":"I can look at the cake instead, if that helps.","z":"要不我改看蛋糕，会不会好点？"}]},
+  {"act":{"z":"转 · 被这份热闹打动","e":"END · Touched by the Noise"},"lines":[
+   {"w":"narrator","e":"Someone turns down the lamps. Only a few people stay.","z":"有人把灯调暗了，只留下几个人。"},
+   {"w":"anna","e":"We just wanted you to know you are part of this.","z":"我们只是想让你知道，你也是我们这儿的人。"},
+   {"w":"kristoff","e":"...Okay. This is good. Sven, save me a slice.","z":"……好吧，这样挺好。斯特恩，给我留一块。"}]}],
+ "words":[{"e":"surprise","z":"惊喜","x":"🎉"},{"e":"present","z":"礼物","x":"🎁"},{"e":"shy","z":"害羞的","x":"😳"},{"e":"crowd","z":"人群","x":"👥"},{"e":"cake","z":"蛋糕","x":"🎂"},{"e":"thanks","z":"谢谢","x":"🙏"}],
+ "magic":{"e":"Thank you, my friends.","z":"谢谢你们，我的朋友。","t":["Thank","you,","my","friends."]},
+ "order":[{"e":"Anna and Elsa plan a party, but Kristoff is not used to a crowd.","z":"姐妹俩张罗生日会，可克里斯托夫不习惯被围着。"},
+   {"e":"Surprises, gifts and an enormous cake make it awkward and chaotic.","z":"惊喜、礼物、大蛋糕接连上阵，又尴尬又热闹。"},
+   {"e":"The lamps go down, and he is quietly touched by it all.","z":"灯暗下来，他还是被这份心意打动了。"}],
+ "choice":{"q":{"e":"Kristoff looks uncomfortable with everyone watching. What do you do?","z":"克里斯托夫被大家看得不自在，你会？"},"opts":[
+   {"e":"Dim the lamps and let only a few stay.","z":"把灯调暗，只留几个人。","tag":"体贴","r":{"w":"kristoff","e":"Oh. Much better. I can see the cake now.","z":"啊，好多了，我现在能看见蛋糕了。"},"fx":{"x":"🕯️","e":"One small lamp, one quiet circle.","z":"一盏小灯，一圈安静的人。"},"st":{"x":"🕯️","z":"小灯贴纸","e":"Quiet Lamp"}},
+   {"e":"Move Sven to sit right beside him.","z":"让斯特恩坐到他旁边。","tag":"借力","r":{"w":"sven","e":"(leans against his shoulder)","z":"（把头靠在他肩上）"},"fx":{"x":"🦌","e":"Nobody notices the crowd any more.","z":"没人再注意那一大群人了。"},"st":{"x":"🦌","z":"驯鹿贴纸","e":"Sven"}},
+   {"e":"Cut the cake so everyone stops staring.","z":"先把蛋糕切开，大家就不盯着他了。","tag":"化解","r":{"w":"anna","e":"Cake! Everyone look at CAKE!","z":"蛋糕！大家看蛋糕！"},"fx":{"x":"🍰","e":"Forty eyes turn to one table.","z":"四十只眼睛一起转向一张桌子。"},"st":{"x":"🍰","z":"蛋糕贴纸","e":"Cake Slice"}}]},
+ "moment":{"x":"🎂","e":"One candle, one small circle of friends, one very large cake.","z":"一支蜡烛，一小圈朋友，一个很大的蛋糕。"},
+ "sticker":{"x":"🛷","z":"小雪橇","e":"Little Sled"},
+ "egg":{"e":"Under the presents, a note from Anna: You do not have to say anything.","z":"礼物堆最底下，安娜写了张纸条：不用说话也行。"}},
+
+{"n":11,"z":"奥肯的发明","e":"Oaken's Invention","author":"Jessica Julius","g":4,"comedy":true,
+ "place":{"z":"奥肯的杂货铺","e":"Oaken's Trading Post"},"theme":"shop","x":"⚙️",
+ "mainline":{"z":"Trading Post 老板奥肯捣鼓出一件『划时代』的新发明，兴冲冲地向顾客推销；东西要么太好用要么太离谱，店里被折腾得鸡飞狗跳，故事用典型的奥肯式热情收场。","e":"Oaken unveils a 'groundbreaking' invention. It works too well, or not at all; the shop is turned upside down, and Oaken ends it with his usual booming cheer."},
+ "beats":[
+  {"act":{"z":"起 · 划时代的新发明","e":"BEGINNING · A Groundbreaking Invention"},"lines":[
+   {"w":"oaken","e":"Yoo-hoo! Big summer blowout! And NOW — my greatest invention!","z":"哟嚯！夏季大促销！现在——请看出色的新发明！"},
+   {"w":"anna","e":"What does it do?","z":"它是做什么的？"},
+   {"w":"oaken","e":"Everything!","z":"什么都能做！"}]},
+  {"act":{"z":"承 · 鸡飞狗跳","e":"MIDDLE · Chaos in the Shop"},"lines":[
+   {"w":"narrator","e":"It folds a scarf. It sweeps the snow out. It sweeps the snow back in.","z":"它叠好围巾，把雪扫出去，又把雪扫回来。"},
+   {"w":"narrator","e":"It puts a hat on Sven.","z":"它给斯特恩戴上了帽子。"},
+   {"w":"kristoff","e":"It just sold me my own hat.","z":"它把我自己的帽子卖给了我。"},
+   {"w":"oaken","e":"A very good hat!","z":"那可是顶好帽子！"}]},
+  {"act":{"z":"转 · 照旧笑呵呵收场","e":"END · Yoo-hoo, As Always"},"lines":[
+   {"w":"oaken","e":"So! Who wants one?","z":"那么！谁要来一台？"},
+   {"w":"narrator","e":"The shop is extremely quiet.","z":"店里非常安静。"},
+   {"w":"olaf","e":"I do! Does it make friends?","z":"我要！它会交朋友吗？"},
+   {"w":"oaken","e":"For you, my friend, it does. Yoo-hoo!","z":"给你的话，它会哟。哟嚯！"}]}],
+ "words":[{"e":"shop","z":"商店","x":"🏪"},{"e":"invention","z":"发明","x":"⚙️"},{"e":"machine","z":"机器","x":"🤖"},{"e":"try","z":"试一试","x":"🙋"},{"e":"hat","z":"帽子","x":"🎩"},{"e":"mess","z":"一团乱","x":"🌀"}],
+ "magic":{"e":"Let me try it, please.","z":"请让我试一试。","t":["Let","me","try","it,","please."]},
+ "order":[{"e":"Oaken unveils a groundbreaking invention and sells it with great cheer.","z":"奥肯推出『划时代』新发明，热情推销。"},
+   {"e":"It works too well or far too strangely, and the shop is a mess.","z":"它有时太好用、有时太离谱，店里鸡飞狗跳。"},
+   {"e":"Oaken ends the day just as cheerful as he started.","z":"奥肯照样笑呵呵地吆喝收场。"}],
+ "choice":{"q":{"e":"The invention has turned the shop upside down. What do you do?","z":"新发明把店里弄得一团乱，你会？"},"opts":[
+   {"e":"Ask: what can it do for me?","z":"先问：它能帮我做什么？","tag":"好奇","r":{"w":"oaken","e":"Excellent question! Let me show you. Twice!","z":"问得好！我演示给你看，演示两遍！"},"fx":{"x":"❓","e":"The machine folds one more scarf, proudly.","z":"机器又得意地叠好一条围巾。"},"st":{"x":"❓","z":"好奇贴纸","e":"Good Question"}},
+   {"e":"Help Oaken put everything back.","z":"帮奥肯把东西一件件归位。","tag":"帮忙","r":{"w":"oaken","e":"A helper! You are hired. Unpaid. But hired!","z":"有帮手啦！雇你了，没工钱，但雇了！"},"fx":{"x":"🧺","e":"The floor reappears, one shelf at a time.","z":"地板一格一格露了出来。"},"st":{"x":"🧺","z":"小篮子","e":"Tidy Basket"}},
+   {"e":"Suggest adding a STOP button.","z":"提议给机器加一个『停』按钮。","tag":"改进","r":{"w":"kristoff","e":"Now that is an invention.","z":"这才叫发明。"},"fx":{"x":"🛑","e":"For the first time all day, the shop is still.","z":"那一整天里，店里第一次安静下来。"},"st":{"x":"🛑","z":"停止按钮","e":"Stop Button"}}]},
+ "moment":{"x":"⚙️","e":"The machine gives one last puff — and produces a single perfect snowflake.","z":"机器最后噗了一声，吐出一朵完美的小雪花。"},
+ "sticker":{"x":"🎩","z":"小礼帽","e":"Little Top Hat"},
+ "egg":{"e":"The instruction sheet has one line: Step 1 — press the button.","z":"说明书只有一行字：第 1 步，按下按钮。"}},
+
+{"n":12,"z":"艾莎的（惊喜）惊喜派对","e":"Elsa's (Surprise) Surprise Party","author":"Calliope Glass","g":2,"comedy":false,
+ "place":{"z":"城堡 · 惊喜派对","e":"Castle Surprise Party"},"theme":"party","x":"🎭",
+ "mainline":{"z":"安娜筹划给艾莎一个惊喜派对，千叮咛万嘱咐所有人保密；可艾莎实在太了解妹妹，蛛丝马迹全被她看在眼里——『惊喜』到底有没有成功，成了故事的反转笑点。","e":"Anna plans a surprise party and swears everyone to secrecy. Elsa knows her sister too well and spots every clue — so who exactly was surprised?"},
+ "beats":[
+  {"act":{"z":"起 · 千万保密","e":"BEGINNING · Tell Nobody"},"lines":[
+   {"w":"anna","e":"Nobody tells Elsa. Nobody. Not even the curtains.","z":"谁都不许告诉艾莎。谁都不许，连帘子也不许。"},
+   {"w":"olaf","e":"I told the curtains. Was that wrong?","z":"我告诉帘子了，这样不对吗？"},
+   {"w":"anna","e":"...We move on.","z":"……我们往下进行。"}]},
+  {"act":{"z":"承 · 全被看穿","e":"MIDDLE · Every Clue Spotted"},"lines":[
+   {"w":"elsa","e":"There are eleven chairs. We are nine.","z":"有十一把椅子，我们只有九个人。"},
+   {"w":"elsa","e":"Anna has frosting on one hand and a delivery note in the other.","z":"安娜一只手上有糖霜，另一只手拿着送货单。"},
+   {"w":"anna","e":"We are... very prepared?","z":"我们……准备得比较充分？"}]},
+  {"act":{"z":"转 · 到底谁惊喜了谁","e":"END · Who Surprised Whom"},"lines":[
+   {"w":"narrator","e":"That evening, Elsa opens the door.","z":"那天傍晚，艾莎推开了门。"},
+   {"w":"elsa","e":"OH! I had NO idea!","z":"哎呀！我完全不知道！"},
+   {"w":"anna","e":"You did, did you not?","z":"你早就知道了，对不对？"},
+   {"w":"elsa","e":"Not a clue. And it was perfect.","z":"一点都不知道。而且棒极了。"}]}],
+ "words":[{"e":"secret","z":"秘密","x":"🤫"},{"e":"chair","z":"椅子","x":"🪑"},{"e":"hide","z":"藏","x":"🙈"},{"e":"know","z":"知道","x":"💡"},{"e":"act","z":"假装","x":"🎭"},{"e":"perfect","z":"完美的","x":"✨"}],
+ "magic":{"e":"I have a surprise for you.","z":"我有一个惊喜给你。","t":["I","have","a","surprise","for","you."]},
+ "order":[{"e":"Anna plans a surprise party and swears everyone to secrecy.","z":"安娜筹划惊喜派对，叮嘱所有人千万保密。"},
+   {"e":"Elsa knows her sister too well and spots every single clue.","z":"艾莎太了解妹妹，从蛛丝马迹里全看了出来。"},
+   {"e":"At the party Elsa acts completely surprised — so who got the surprise?","z":"派对上艾莎假装毫不知情——到底谁给了谁惊喜？"}],
+ "choice":{"q":{"e":"You realise Elsa has known all along. What do you do?","z":"你发现艾莎早就知道了，你会？"},"opts":[
+   {"e":"Play along and let the surprise happen.","z":"配合她，把『惊喜』演完。","tag":"体贴","r":{"w":"elsa","e":"Thank you for not telling me. I mean it.","z":"谢谢你没告诉我，我是认真的。"},"fx":{"x":"🎭","e":"The biggest smile in the room is the pretend one.","z":"屋里最大的笑容，是那个装出来的。"},"st":{"x":"🎭","z":"小面具","e":"Little Mask"}},
+   {"e":"Laugh and say: you knew!","z":"直接笑出来：你早就知道啦！","tag":"坦诚","r":{"w":"anna","e":"Since Tuesday? SINCE TUESDAY?","z":"星期二就知道了？星期二？！"},"fx":{"x":"😂","e":"The whole room laughs, including the curtains.","z":"满屋子都笑了，连帘子也在笑。"},"st":{"x":"😂","z":"大笑贴纸","e":"Big Laugh"}},
+   {"e":"Add one real surprise at the last second.","z":"临时加一个真惊喜。","tag":"创意","r":{"w":"olaf","e":"I was not told about this one either!","z":"这一个连我都没被通知！"},"fx":{"x":"🎉","e":"Elsa's OH is not acting at all.","z":"艾莎那声『哎呀』，一点都不是装的。"},"st":{"x":"🎉","z":"真惊喜","e":"Real Surprise"}}]},
+ "moment":{"x":"🎊","e":"The bunting falls. Two sisters laugh at exactly the same time.","z":"彩带落下来，姐妹俩同时笑出了声。"},
+ "sticker":{"x":"🎭","z":"惊喜面具","e":"Surprise Mask"},
+ "egg":{"e":"In the corner of the delivery note: For the best fake gasp in Arendelle.","z":"送货单角落写着：给全阿伦戴尔最会装惊讶的人。"}},
+
+{"n":13,"z":"一个新朋友","e":"A New Friend","author":"Brooke Vitale","g":4,"comedy":false,
+ "place":{"z":"阿伦戴尔 · 广场","e":"Arendelle Square"},"theme":"castle","x":"🤝",
+ "mainline":{"z":"安娜在阿伦戴尔结识一位新朋友（初来乍到、有点害羞的孩子或访客）；她用一贯的热情带对方熟悉城堡与小镇，也学会了『交朋友不只是自己热闹，还要顾及对方的节奏』。","e":"Anna meets a shy newcomer and gives the loudest tour in Arendelle. She learns that making a friend means going at the other person's speed."},
+ "beats":[
+  {"act":{"z":"起 · 太热情了","e":"BEGINNING · A Very Loud Tour"},"lines":[
+   {"w":"anna","e":"A new face in the square! Come, I will show you EVERYTHING!","z":"广场上来了一张新面孔！来，我带你把所有地方都看一遍！"},
+   {"w":"newfriend","e":"...","z":"……"},
+   {"w":"narrator","e":"The new friend takes one small step back.","z":"新朋友往后退了小小一步。"}]},
+  {"act":{"z":"承 · 越介绍，声音越小","e":"MIDDLE · Quieter and Quieter"},"lines":[
+   {"w":"anna","e":"Bakery! Clock tower! Harbour! Best bench! Best bun! Best—","z":"面包店！钟楼！港口！最好的长椅！最好吃的面包！还有——"},
+   {"w":"newfriend","e":"...mm.","z":"……嗯。"},
+   {"w":"olaf","e":"Maybe the tour is going faster than the friend.","z":"也许是导览走得比朋友快了点。"}]},
+  {"act":{"z":"转 · 按对方的节奏","e":"END · At the Other Person's Speed"},"lines":[
+   {"w":"narrator","e":"Anna stops. She sits on the step and says nothing at all.","z":"安娜停下来了。她坐在台阶上，一句话也没说。"},
+   {"w":"newfriend","e":"...Can we sit here a little?","z":"……我们可以在这儿坐一会儿吗？"},
+   {"w":"anna","e":"As long as you like.","z":"你想坐多久都行。"},
+   {"w":"narrator","e":"That is how a friend is made: at the other person's speed.","z":"朋友就是这样交上的：按对方的节奏来。"}]}],
+ "words":[{"e":"friend","z":"朋友","x":"🤝"},{"e":"new","z":"新的","x":"🌱"},{"e":"shy","z":"害羞的","x":"😳"},{"e":"slow","z":"慢一点","x":"🐢"},{"e":"sit","z":"坐","x":"🪜"},{"e":"welcome","z":"欢迎","x":"👋"}],
+ "magic":{"e":"Come and sit with me.","z":"来和我一起坐吧。","t":["Come","and","sit","with","me."]},
+ "order":[{"e":"Anna meets a shy newcomer and pulls them into a huge tour.","z":"安娜遇见一位害羞的新朋友，拉着对方到处参观。"},
+   {"e":"The faster she talks, the quieter the new friend becomes.","z":"她介绍得越快，对方的声音越小。"},
+   {"e":"She stops and simply sits beside them — friendship at their speed.","z":"她停下来陪对方坐着——按对方的节奏交朋友。"}],
+ "choice":{"q":{"e":"Your new friend has not said a word. What do you do?","z":"新朋友一直不说话，你会？"},"opts":[
+   {"e":"Sit quietly beside them.","z":"安静地坐到旁边。","tag":"陪伴","r":{"w":"newfriend","e":"...Okay.","z":"……好。"},"fx":{"x":"🪜","e":"Two shadows, one step, no hurry.","z":"两道影子，一级台阶，不着急。"},"st":{"x":"🪜","z":"台阶贴纸","e":"Two on a Step"}},
+   {"e":"Offer something small, without asking anything.","z":"递过去一样小东西，不问问题。","tag":"分享","r":{"w":"newfriend","e":"...Thank you.","z":"……谢谢你。"},"fx":{"x":"🍞","e":"A warm bun changes hands. Nothing is required.","z":"一个热面包换了手，不需要任何回报。"},"st":{"x":"🍞","z":"小面包","e":"Warm Bun"}},
+   {"e":"Ask: what would YOU like to see first?","z":"问：你想先看哪里？","tag":"尊重","r":{"w":"newfriend","e":"...The bench?","z":"……那张长椅？"},"fx":{"x":"🧭","e":"The whole tour becomes one bench long.","z":"整趟导览，缩短成一张长椅那么长。"},"st":{"x":"🧭","z":"新路线","e":"New Route"}}]},
+ "moment":{"x":"🪜","e":"Two small cakes, two people, one very quiet step.","z":"两块小点心，两个人，一级很安静的台阶。"},
+ "sticker":{"x":"🤝","z":"小手拉手","e":"New Friend"},
+ "egg":{"e":"Carved into the step: Slow is fine.","z":"台阶上刻着一行小字：慢一点也没关系。"}},
+
+{"n":14,"z":"一只冰雪怪物","e":"An Icy Monster","author":"Rebecca Schmidt","g":3,"comedy":false,
+ "place":{"z":"阿伦戴尔 · 集市","e":"Arendelle Market"},"theme":"forest","x":"☃️",
+ "mainline":{"z":"艾莎的魔法又一次『自作主张』，造出一只失控的冰雪怪物，把镇子搅得一团乱；姐妹俩（加上奥拉夫）合力应对，最后发现怪物并不是坏，只是被吓到了——安抚比对抗更有效。","e":"Elsa's magic runs off and makes a huge snow creature that wrecks the market. It turns out the creature is not bad, just frightened — calming works better than fighting."},
+ "beats":[
+  {"act":{"z":"起 · 镇子一团乱","e":"BEGINNING · Chaos in the Market"},"lines":[
+   {"w":"narrator","e":"A swirl of magic runs off on its own. By noon, a huge snow shape is knocking over stalls.","z":"一团魔法自己跑出去了。到了中午，一个巨大的雪影子把摊子撞翻了一片。"},
+   {"w":"anna","e":"A monster! A BIG one!","z":"有怪物！好大一只！"},
+   {"w":"elsa","e":"Wait. Look at its feet.","z":"等一下，看它的脚。"}]},
+  {"act":{"z":"承 · 它在发抖","e":"MIDDLE · It Is Shaking"},"lines":[
+   {"w":"kristoff","e":"I can get a rope. Or a very large net.","z":"我去拿绳子，或者一张很大的网。"},
+   {"w":"olaf","e":"It is shaking. I shake when I am scared, too.","z":"它在发抖。我害怕的时候也发抖。"},
+   {"w":"elsa","e":"Then we do not shout.","z":"那我们就不喊。"}]},
+  {"act":{"z":"转 · 安抚比对抗有效","e":"END · Soft Words Work Better"},"lines":[
+   {"w":"narrator","e":"One quiet sentence later, the huge shape curls into a very small snowball.","z":"轻轻说了一句话之后，那个巨大的影子缩成了一个很小的雪球。"},
+   {"w":"anna","e":"It was not mean. It was frightened of its own big shadow.","z":"它不是坏，是被自己的大影子吓到了。"},
+   {"w":"elsa","e":"Soft words work better than big ones.","z":"轻轻的话，比大声的话管用。"}]}],
+ "words":[{"e":"monster","z":"怪物","x":"👾"},{"e":"big","z":"大的","x":"🐘"},{"e":"small","z":"小的","x":"🔹"},{"e":"scared","z":"害怕的","x":"😨"},{"e":"soft","z":"轻轻的","x":"🕊️"},{"e":"help","z":"帮助","x":"🫶"}],
+ "magic":{"e":"Do not be scared. I can help.","z":"别害怕，我能帮你。","t":["Do","not","be","scared.","I","can","help."]},
+ "order":[{"e":"Elsa's magic makes a huge snow creature that wrecks the market.","z":"艾莎的魔法自作主张，造出一只搅乱镇子的冰雪怪物。"},
+   {"e":"The sisters and Olaf notice it is shaking, not attacking.","z":"姐妹俩和奥拉夫发现它在发抖，并不是在攻击。"},
+   {"e":"It was only scared; soft words calm it better than force.","z":"原来它只是被吓到了，轻轻安抚比对抗更管用。"}],
+ "choice":{"q":{"e":"The snow creature is shaking behind a tree. Which one do you choose?","z":"大雪团缩在树后发抖，你选哪一句？"},"opts":[
+   {"e":"Kneel down and say softly: do not be scared.","z":"蹲下来轻轻说：别害怕。","tag":"温柔","r":{"w":"olaf","e":"Soft words fit small ears.","z":"轻轻的话，正合小耳朵。"},"fx":{"x":"🕊️","e":"The shaking slows down.","z":"发抖慢慢停了。"},"st":{"x":"🕊️","z":"羽毛贴纸","e":"Soft Word"}},
+   {"e":"Ask Bulda to shine her crystal on it.","z":"先请布达用水晶照一照。","tag":"借力","r":{"w":"bulda","e":"Look. Only a lost little one.","z":"看哪，只是个迷路的小家伙。"},"fx":{"x":"💎","e":"The shadow on the wall is much bigger than the creature.","z":"墙上的影子，比它本身大得多。"},"st":{"x":"💎","z":"水晶光","e":"Crystal Light"}},
+   {"e":"Hold out your own scarf.","z":"把自己的围巾递过去。","tag":"行动","r":{"w":"anna","e":"Oh. It was cold, not mean.","z":"啊，它是冷，不是坏。"},"fx":{"x":"🧣","e":"A very large, very gentle wrap.","z":"一条很大、很轻的围巾围了上去。"},"st":{"x":"🧣","z":"小围巾","e":"Warm Scarf"}}]},
+ "moment":{"x":"🐇","e":"The little snowball hops into Olaf's hands and follows him home.","z":"小雪球跳进奥拉夫手里，跟着他回家了。"},
+ "sticker":{"x":"🧣","z":"暖暖围巾","e":"Warm Scarf"},
+ "egg":{"e":"Two sets of tracks in the snow: very big, then suddenly very small.","z":"雪地上两串脚印：一串很大，一串忽然变小了。"}},
+
+{"n":15,"z":"安娜当女王","e":"Anna in Charge","author":"Liz Rudnick","g":4,"comedy":false,
+ "place":{"z":"阿伦戴尔 · 议事厅","e":"Arendelle Council Room"},"theme":"castle","x":"👑",
+ "mainline":{"z":"艾莎离城办事，安娜临时『代理女王』；她原以为签签字、剪剪彩很简单，结果从民生琐事到外交礼节样样棘手，还差点好心办错事。一天下来她真正体会到姐姐的分量，也找到属于自己的治理方式。","e":"Elsa is away and Anna is queen for a day. Signing papers looked easy; everything is tricky, and she nearly promises the same thing twice. She finds her own way: listening."},
+ "beats":[
+  {"act":{"z":"起 · 看起来很简单","e":"BEGINNING · How Hard Can It Be"},"lines":[
+   {"w":"elsa","e":"I will be back by evening. You are in charge, Anna.","z":"我傍晚就回来，今天你当家，安娜。"},
+   {"w":"anna","e":"Sign things. Cut ribbons. How hard can it be?","z":"签签字，剪剪彩，能有多难？"}]},
+  {"act":{"z":"承 · 样样棘手","e":"MIDDLE · Everyone at Once"},"lines":[
+   {"w":"villagers","e":"The boats need a berth. The bakery needs flour. The envoy needs the right greeting.","z":"渔船要泊位，面包店要面粉，使节要合乎礼节的问候。"},
+   {"w":"anna","e":"Everyone is talking at once. And they all need an answer today.","z":"所有人同时在说话，而且今天都要一个答复。"},
+   {"w":"anna","e":"Wait. I almost said yes to both of them. Same cart of flour.","z":"等等，我差点对两家都说了好，还是同一车面粉。"}]},
+  {"act":{"z":"转 · 自己的办法","e":"END · Her Own Way"},"lines":[
+   {"w":"narrator","e":"Anna carries a table out to the square. She listens to one person at a time and writes every single thing down.","z":"安娜把桌子搬到广场上，一次听一个人说，把每一条都写下来。"},
+   {"w":"anna","e":"I cannot be Elsa today. But I can be the person who listens.","z":"我今天当不了艾莎，但我可以当那个认真听的人。"},
+   {"w":"elsa","e":"How was it?","z":"今天怎么样？"},
+   {"w":"anna","e":"Tomorrow I am adding a bigger chair. And a bigger list.","z":"明天我要换一把更大的椅子，还有一张更长的单子。"}]}],
+ "words":[{"e":"queen","z":"女王","x":"👑"},{"e":"paper","z":"文件","x":"📄"},{"e":"listen","z":"听","x":"👂"},{"e":"problem","z":"问题","x":"🧩"},{"e":"answer","z":"回答","x":"💬"},{"e":"day","z":"一天","x":"📅"}],
+ "magic":{"e":"I will listen to you.","z":"我会听你说。","t":["I","will","listen","to","you."]},
+ "order":[{"e":"Elsa leaves and Anna becomes queen for a day; it looks easy.","z":"艾莎离城，安娜临时当代理女王，以为签签字就行。"},
+   {"e":"Every small problem is tricky and she nearly promises the same thing twice.","z":"从民生琐事到外交礼节样样棘手，还差点好心办错事。"},
+   {"e":"She takes a table to the square, listens one by one, and finds her own way.","z":"她把桌子搬到广场一个个听，找到自己的办法。"}],
+ "choice":{"q":{"e":"Two people need you at once, and both are in a hurry. What do you do?","z":"两个人同时需要你，而且都很急，你会？"},"opts":[
+   {"e":"Ask them both to sit; listen one at a time.","z":"先都请坐下，一个一个听。","tag":"倾听","r":{"w":"anna","e":"You first. I am writing it down.","z":"你先说，我记下来。"},"fx":{"x":"🪑","e":"Two chairs, one very long list.","z":"两把椅子，一张很长的单子。"},"st":{"x":"🪑","z":"两把椅子","e":"Two Chairs"}},
+   {"e":"Ask Bulda to write down every request.","z":"请布达帮忙记下每一条。","tag":"借力","r":{"w":"bulda","e":"I write slowly. That is why nothing gets lost.","z":"我写得慢，所以什么都不会漏。"},"fx":{"x":"📋","e":"The list becomes neat, and stays honest.","z":"单子变整齐了，也还是老老实实的。"},"st":{"x":"📋","z":"长清单","e":"Long List"}},
+   {"e":"Say: I may not finish today, but I will not forget.","z":"说：我今天可能答不完，但不会忘。","tag":"坦诚","r":{"w":"villagers","e":"That is all we wanted to hear.","z":"我们想听的就是这句。"},"fx":{"x":"🤝","e":"The room gets quieter, all at once.","z":"屋子一下子安静了。"},"st":{"x":"🤝","z":"承诺贴纸","e":"I Will Not Forget"}}]},
+ "moment":{"x":"📋","e":"The little list is pinned to the castle gate. Everyone can read it.","z":"那张小清单被贴到城门上，谁都能来看。"},
+ "sticker":{"x":"👑","z":"小纸王冠","e":"Paper Crown"},
+ "egg":{"e":"The last line of the list is not business: Save a slice for Elsa.","z":"清单最后一行不是公事，是『给姐姐留一块蛋糕』。"}},
+
+{"n":16,"z":"送什么给什么都不缺的驯鹿？","e":"What Do You Get a Reindeer Who Has Everything?","author":"Calliope Glass","g":2,"comedy":false,
+ "place":{"z":"冰湖边","e":"By the Frozen Lake"},"theme":"winter","x":"🦌",
+ "mainline":{"z":"斯特恩要过生日（或收到惊喜），可这只『什么都不缺』的驯鹿让送礼的人犯了难：胡萝卜？苔藓？新雪橇？大家 brainstorm 出一堆离谱方案；最后的答案很朴素——陪伴和一块好冰。","e":"It is Sven's birthday, but he has everything. Golden carrots? A new sled? After a pile of wild ideas, the answer is simple: company and one good piece of ice."},
+ "beats":[
+  {"act":{"z":"起 · 什么都不缺","e":"BEGINNING · He Has Everything"},"lines":[
+   {"w":"anna","e":"It is Sven's birthday! What do you get a reindeer who has everything?","z":"斯特恩过生日啦！给一只什么都不缺的驯鹿送什么好？"},
+   {"w":"kristoff","e":"He has a sled. He has carrots. He has me.","z":"他有雪橇，有胡萝卜，还有我。"},
+   {"w":"narrator","e":"Sven nods, which does not help.","z":"斯特恩点了点头，这没什么帮助。"}]},
+  {"act":{"z":"承 · 一堆离谱方案","e":"MIDDLE · A Pile of Wild Ideas"},"lines":[
+   {"w":"anna","e":"A golden carrot! Singing moss! A sled with a sun-roof!","z":"金胡萝卜！会唱歌的苔藓！带天窗的雪橇！"},
+   {"w":"olaf","e":"What about a very small parade? I can be the whole parade.","z":"要不办个小小的游行？我一个人就能当整支队伍。"},
+   {"w":"kristoff","e":"He liked the word carrot. That is all he heard.","z":"他只听见『胡萝卜』三个字，别的都没听进去。"}]},
+  {"act":{"z":"转 · 答案很朴素","e":"END · The Simplest Answer"},"lines":[
+   {"w":"narrator","e":"In the end they buy nothing. They sit on the ice all afternoon and share one clean, clear piece of it.","z":"最后他们什么也没买，在冰上坐了一整个下午，分了一块干干净净的好冰。"},
+   {"w":"kristoff","e":"He liked that best.","z":"他最喜欢这个。"},
+   {"w":"anna","e":"Being there was the present.","z":"人在那儿，就是礼物。"}]}],
+ "words":[{"e":"reindeer","z":"驯鹿","x":"🦌"},{"e":"carrot","z":"胡萝卜","x":"🥕"},{"e":"sled","z":"雪橇","x":"🛷"},{"e":"idea","z":"主意","x":"💡"},{"e":"ice","z":"冰","x":"🧊"},{"e":"stay","z":"留下","x":"🕰️"}],
+ "magic":{"e":"I will stay with you.","z":"我会陪着你。","t":["I","will","stay","with","you."]},
+ "order":[{"e":"It is Sven's birthday, but he already has everything.","z":"斯特恩要过生日，可他『什么都不缺』，大家犯了难。"},
+   {"e":"Golden carrots, a new sled... a pile of wild ideas is brainstormed.","z":"金胡萝卜、新雪橇……一堆离谱方案被想了出来。"},
+   {"e":"The answer is simple: an afternoon together, and one good piece of ice.","z":"答案很朴素：陪他坐一下午，加一块好冰。"}],
+ "choice":{"q":{"e":"A friend who has everything has a birthday. What do you give?","z":"什么都不缺的朋友过生日，你会送什么？"},"opts":[
+   {"e":"Buy nothing. Just stay the whole afternoon.","z":"什么都不买，去陪他坐一下午。","tag":"陪伴","r":{"w":"kristoff","e":"He will remember the sitting. Not the wrapping.","z":"他会记住一起坐着，不会记住包装纸。"},"fx":{"x":"🕰️","e":"The afternoon gets very long, in a good way.","z":"下午变得很长，是那种好的长。"},"st":{"x":"🕰️","z":"一下午","e":"One Afternoon"}},
+   {"e":"Make a card with just one sentence.","z":"做一张只有一句话的卡片。","tag":"心意","r":{"w":"anna","e":"One line is plenty. I tried six and crossed out five.","z":"一句就够啦，我写了六句，划掉了五句。"},"fx":{"x":"💌","e":"The card says: I am glad you are here.","z":"卡片上写着：有你在真好。"},"st":{"x":"💌","z":"一句话卡","e":"One Line"}},
+   {"e":"Polish up his favourite old thing.","z":"把他最喜欢的旧东西擦得亮亮的。","tag":"用心","r":{"w":"olaf","e":"It looks new! But it still knows all the old stories.","z":"看着像新的！可它还记得所有旧故事。"},"fx":{"x":"✨","e":"An old sled shines like it did on day one.","z":"旧雪橇亮得像第一天那样。"},"st":{"x":"✨","z":"旧雪橇","e":"Old Sled"}}]},
+ "moment":{"x":"🧊","e":"One clear piece of ice, a circle of friends, and a whole afternoon.","z":"一块透亮的冰，一圈人，整整一个下午。"},
+ "sticker":{"x":"🥕","z":"金胡萝卜","e":"Golden Carrot"},
+ "egg":{"e":"At the top of the crossed-out list: Idea 1 — just be there.","z":"被划掉的清单最上面写着：第 1 个主意，一起待着。"}},
+
+{"n":17,"z":"融化人心","e":"Melting Hearts","author":"Megan Ilnitzki","g":3,"comedy":false,
+ "place":{"z":"阿伦戴尔 · 冬日门廊","e":"Arendelle Winter Porch"},"theme":"winter","x":"☕",
+ "mainline":{"z":"书名双关：既是『融化冰雪』，也是『融化人心』。一个冷淡、别扭的角色（村民或来客）被安娜式的热心一点点软化，在冰雪背景里完成一次『心被捂热』的小转变。","e":"A chilly, awkward visitor is softened, one small kindness at a time — a heart quietly warmed in the middle of winter."},
+ "beats":[
+  {"act":{"z":"起 · 几乎不说话","e":"BEGINNING · Almost No Words"},"lines":[
+   {"w":"narrator","e":"A visitor comes to Arendelle and says almost nothing.","z":"一位来客到了阿伦戴尔，几乎不说话。"},
+   {"w":"guest","e":"I do not need a tour. Or a coat. Or a... what is that?","z":"我不需要参观，也不需要外套，还有……那是什么？"},
+   {"w":"anna","e":"Hot cocoa. It is for you.","z":"热可可，给你的。"}]},
+  {"act":{"z":"承 · 每天一杯","e":"MIDDLE · One Cup a Day"},"lines":[
+   {"w":"narrator","e":"Day one: not taken. Day two: taken, not drunk. Day three: empty.","z":"第一天没拿，第二天拿了没喝，第三天杯子空了。"},
+   {"w":"olaf","e":"The cup is empty. That is a very loud sentence.","z":"杯子空了，这句话可响了。"},
+   {"w":"anna","e":"Then I will not ask. I will just leave one there.","z":"那我就不问了，每天放一杯就好。"}]},
+  {"act":{"z":"转 · 心被捂热","e":"END · A Heart Warmed"},"lines":[
+   {"w":"narrator","e":"On the first snowy morning, the visitor comes over with two cups.","z":"第一个下雪的早晨，来客端着两只杯子走了过来。"},
+   {"w":"guest","e":"It is cold. You should have one too.","z":"天冷，你也该喝一杯。"},
+   {"w":"narrator","e":"Nothing melted that day except the quiet.","z":"那天什么都没化，只化了那份安静。"},
+   {"w":"anna","e":"Best sentence all week.","z":"这一整个星期，最好听的一句话。"}]}],
+ "words":[{"e":"cold","z":"冷的","x":"🥶"},{"e":"cocoa","z":"热可可","x":"☕"},{"e":"cup","z":"杯子","x":"🥤"},{"e":"quiet","z":"安静的","x":"🤫"},{"e":"kind","z":"友善的","x":"💛"},{"e":"warm","z":"温暖的","x":"🔥"}],
+ "magic":{"e":"This warm cup is for you.","z":"这杯热的是给你的。","t":["This","warm","cup","is","for","you."]},
+ "order":[{"e":"A cool, awkward visitor arrives and barely speaks.","z":"一位冷淡别扭的来客到了阿伦戴尔，几乎不说话。"},
+   {"e":"Anna does not push; she simply leaves a hot cup out each day.","z":"安娜不追问，只是每天悄悄放一杯热的。"},
+   {"e":"On a snowy morning the visitor brings two cups — the quiet melts.","z":"下雪那天，来客端来两杯——话不多，心却暖了。"}],
+ "choice":{"q":{"e":"Someone keeps not answering you. What do you do?","z":"对方一直不理你，你会？"},"opts":[
+   {"e":"Leave the cup again, and say nothing.","z":"照旧放一杯，不多说。","tag":"不打扰的温柔","r":{"w":"olaf","e":"That is the quietest kind of hello.","z":"这是最安静的一种问候。"},"fx":{"x":"☕","e":"Day four: the cup is gone before breakfast.","z":"第四天，早饭前杯子就不见了。"},"st":{"x":"☕","z":"小热可可","e":"Hot Cocoa"}},
+   {"e":"Ask: would you like a warm one today?","z":"问一句：今天想喝热的吗？","tag":"尊重","r":{"w":"guest","e":"...Yes. But do not make a speech about it.","z":"……好。不过别为此讲一大段话。"},"fx":{"x":"💬","e":"One question, one answer, no more.","z":"一个问题，一个回答，不多不少。"},"st":{"x":"💬","z":"一句话","e":"One Question"}},
+   {"e":"Send Olaf to sit nearby for a while.","z":"请奥拉夫去陪他坐一会儿。","tag":"借力","r":{"w":"olaf","e":"I sat. I said nothing. It was excellent.","z":"我坐了，什么也没说，非常成功。"},"fx":{"x":"⛄","e":"Two silent figures, one porch, one sunset.","z":"两个不说话的身影，一条门廊，一场夕阳。"},"st":{"x":"⛄","z":"门廊贴纸","e":"On the Porch"}}]},
+ "moment":{"x":"☕","e":"Two cups side by side, both steaming.","z":"两只杯子并排，一起冒着热气。"},
+ "sticker":{"x":"☕","z":"融化人心","e":"Melting Hearts"},
+ "egg":{"e":"Under the first cup, a note: No thanks needed. No words needed.","z":"第一只杯底压着纸条：不用谢，也不用说话。"}},
+
+{"n":18,"z":"小弟弟小妹妹","e":"Little Brothers","author":"Victoria Saxon","g":4,"comedy":false,
+ "place":{"z":"城堡 · 收尾的一天","e":"Castle, the Last Day"},"theme":"party","x":"🍬",
+ "mainline":{"z":"以『当哥哥姐姐』为主题：面对更小、更闹腾的『小跟班』，主角从一开始的手忙脚乱、嫌麻烦，到慢慢学会照顾与让步；收尾落在『有小家伙在身边其实挺好的』。","e":"Looking after a smaller, louder little helper: from flustered and annoyed to patient and fond — having a little one around is actually rather nice."},
+ "beats":[
+  {"act":{"z":"起 · 手忙脚乱","e":"BEGINNING · A Lot of Help"},"lines":[
+   {"w":"anna","e":"Today I am in charge of a very small, very loud helper.","z":"今天我要照顾一个很小、很吵的小帮手。"},
+   {"w":"littlekid","e":"I help! I help! I HELP!","z":"我帮忙！我帮忙！我要帮忙！"},
+   {"w":"anna","e":"...That is a lot of help.","z":"……这帮忙可真够多的。"}]},
+  {"act":{"z":"承 · 越帮越忙","e":"MIDDLE · Twice as Long"},"lines":[
+   {"w":"narrator","e":"The ribbons are a ball. The cake has one finger-hole. Both shoes are on the wrong feet.","z":"丝带被缠成一个球，蛋糕上戳了个小洞，两只鞋都穿反了。"},
+   {"w":"anna","e":"Everything takes twice as long.","z":"每件事都要花两倍的时间。"},
+   {"w":"olaf","e":"Also three times as loud.","z":"响的程度是三倍。"}]},
+  {"act":{"z":"转 · 其实挺好的","e":"END · Actually Rather Nice"},"lines":[
+   {"w":"littlekid","e":"This one is for you. I did not eat it.","z":"这颗给你，我没有吃掉。"},
+   {"w":"narrator","e":"One warm, slightly squashed sweet, held out in a very small hand.","z":"一颗被攥得暖暖的、有点压扁的糖，从一只很小的手里递过来。"},
+   {"w":"anna","e":"You know... having you around is actually kind of nice.","z":"你知不知道……有你在身边，其实挺好的。"},
+   {"w":"narrator","e":"The book closes on a very small hand in a very big one.","z":"故事书合上时，一只小手握在一只大手里。"}]}],
+ "words":[{"e":"little","z":"小的","x":"🧒"},{"e":"help","z":"帮忙","x":"🫶"},{"e":"loud","z":"大声的","x":"📣"},{"e":"wait","z":"等一等","x":"⏳"},{"e":"share","z":"分享","x":"🍬"},{"e":"nice","z":"真好的","x":"💛"}],
+ "magic":{"e":"It is nice to have you here.","z":"有你在这儿真好。","t":["It","is","nice","to","have","you","here."]},
+ "order":[{"e":"The hero looks after a smaller, noisier little helper and is flustered.","z":"主角照顾一个更小、更闹腾的小跟班，一开始就手忙脚乱。"},
+   {"e":"Ribbons, cake and shoes all get 'helped' into a mess.","z":"丝带、蛋糕、鞋子全被帮了倒忙，嫌麻烦又得收拾。"},
+   {"e":"The little one saves the last sweet — having them around is nice.","z":"小家伙把最后一颗糖留下来——有小家伙在，其实挺好的。"}],
+ "choice":{"q":{"e":"The little helper keeps making more work. What do you do?","z":"小跟班越帮越忙，你会？"},"opts":[
+   {"e":"Give them one job only they can do.","z":"分给他一件『只有他能做』的小任务。","tag":"信任","r":{"w":"littlekid","e":"ONLY ME? I will do it FOUR times!","z":"只有我能做？那我要做四遍！"},"fx":{"x":"⭐","e":"The ribbons are still a ball, but a proud one.","z":"丝带还是个球，不过是个很得意的球。"},"st":{"x":"⭐","z":"小任务","e":"Special Job"}},
+   {"e":"Stop and have a snack together first.","z":"停下来先一起吃块点心。","tag":"歇一歇","r":{"w":"olaf","e":"A break! I was not helping either, but I will join.","z":"休息啦！我也没帮上忙，不过我要参加。"},"fx":{"x":"🍪","e":"Two minutes of quiet, which is enough.","z":"安静了两分钟，够用了。"},"st":{"x":"🍪","z":"点心贴纸","e":"Snack Break"}},
+   {"e":"Say: we can go slowly.","z":"说：我们慢慢来。","tag":"耐心","r":{"w":"littlekid","e":"Slowly. Okay. ...Slowly!","z":"慢慢来。好。……慢慢来！"},"fx":{"x":"🐢","e":"Everything takes twice as long, and nobody minds.","z":"每件事还是花两倍时间，不过没人在意了。"},"st":{"x":"🐢","z":"慢慢来","e":"Go Slowly"}}]},
+ "moment":{"x":"🍬","e":"One small, warm sweet. One very big hand.","z":"一颗被攥暖的小糖，一只很大的手。"},
+ "sticker":{"x":"📖","z":"合上的词书","e":"The Closed Book"},
+ "egg":{"e":"On the front page, one more line in a child's handwriting.","z":"词书扉页上，多了一行孩子的笔迹。"}}
+]
+}
+</script>
+
+<script>
+/* ==================== 引擎 ==================== */
+const DATA = JSON.parse(document.getElementById('story-data').textContent);
+const CH = DATA.chapters, CAST = DATA.cast, GROUPS = DATA.groups;
+const KEY = 'frozen_storybook_v1';
+const $ = s => document.querySelector(s);
+const app = $('#app'), bg = $('#bg');
+
+/* ---------- 图标兼容：缺少彩色 emoji 字体时自动降级为彩色文字徽章 ---------- */
+const EMOJI_OK = (()=>{
+  try{
+    const cv=document.createElement('canvas'); cv.width=cv.height=40;
+    const cx=cv.getContext('2d',{willReadFrequently:true}); if(!cx) return true;
+    cx.textBaseline='top'; cx.font='30px sans-serif'; cx.fillText('⛄',0,0);
+    const d=cx.getImageData(0,0,40,40).data; let colored=0;
+    for(let i=0;i<d.length;i+=4){ if(d[i+3]>10 && (d[i]!==d[i+1]||d[i+1]!==d[i+2])) colored++; }
+    return colored>15;
+  }catch(e){ return true; }
+})();
+const EMAP={};
+function reg(k,v){ if(k&&!EMAP[k]) EMAP[k]=v; }
+Object.values(CAST).forEach(v=>reg(v.x,v.z[0]));
+CH.forEach(c=>{
+  reg(c.x,c.z[0]); c.words.forEach(w=>reg(w.x,w.z[0]));
+  reg(c.moment.x,c.z[0]); reg(c.sticker.x,'★');
+  c.choice.opts.forEach(o=>{ reg(o.fx.x,'★'); reg(o.st.x,'★'); });
+});
+[['📚','书'],['📖','书'],['🗺','图'],['⭐','星'],['🔊','音'],['🔇','音'],['🏠','家'],
+ ['🎉','庆'],['✅','✓'],['❄️','雪'],['☀️','日'],['🔍','查'],['🗣','说'],['💡','示'],
+ ['✦','✧'],['🅰','A'],['🅱','B'],['🅲','C'],['👩‍🏫','师'],['🔁','换'],['🔓','开'],
+ ['❔','?'],['🕊️','柔'],['🧣','暖'],['⏳','等'],['🏅','奖']].forEach(x=>reg(x[0],x[1]));
+const ERE=/[\u{1F000}-\u{1FAFF}\u{2300}-\u{23FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]+/gu;
+function labelFor(s){
+  if(EMAP[s]) return EMAP[s];
+  for(const ch of s){ if(EMAP[ch]) return EMAP[ch]; }
+  return '★';
+}
+function hashHue(s){ let h=0; for(const ch of s) h=(h*31+ch.codePointAt(0))>>>0; return h%360; }
+function patch(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), nodes=[];
+  while(w.nextNode()) nodes.push(w.currentNode);
+  nodes.forEach(n=>{
+    const t=n.nodeValue; if(!t) return;
+    ERE.lastIndex=0; if(!ERE.test(t)) return;
+    ERE.lastIndex=0;
+    const frag=document.createDocumentFragment(); let last=0,m;
+    while((m=ERE.exec(t))){
+      if(m.index>last) frag.appendChild(document.createTextNode(t.slice(last,m.index)));
+      const sp=document.createElement('span'); sp.className='efb';
+      sp.textContent=labelFor(m[0]); sp.title=m[0];
+      const h=hashHue(m[0]);
+      sp.style.background=`linear-gradient(150deg,hsl(${h} 88% 89%),hsl(${h} 72% 73%))`;
+      sp.style.color=`hsl(${h} 62% 26%)`;
+      frag.appendChild(sp); last=m.index+m[0].length;
+    }
+    if(last<t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+    if(n.parentNode) n.parentNode.replaceChild(frag,n);
+  });
+}
+if(!EMOJI_OK){
+  let busy=false;
+  const mo=new MutationObserver(()=>{
+    if(busy) return; busy=true; mo.disconnect(); patch(app);
+    mo.takeRecords(); mo.observe(app,{childList:true,subtree:true,characterData:true}); busy=false;
+  });
+  mo.observe(app,{childList:true,subtree:true,characterData:true});
+}
+
+let state = load() || {
+  name:'', mode:'both', sound:true, autoRead:false, classroom:false,
+  completed:[], stickers:{}, eggs:{}, flags:{}, stats:{}, ended:false
+};
+function load(){ try{ const s=localStorage.getItem(KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function T(v){ return typeof v === 'string' ? v : (v && (v[state.flags.ch5] || v._ || Object.values(v)[0])) || ''; }
+function P(s){ return esc(T(s)).replace(/\{name\}/g, esc(state.name || 'Friend')); }
+function stat(i){ if(!state.stats[i]) state.stats[i]={word:0,puzzle:0,order:0,reads:0,choice:''}; return state.stats[i]; }
+function unlocked(i){ return state.classroom || i===0 || state.completed.includes(i-1); }
+
+/* ---------- 语音 ---------- */
+function speak(text, lang){
+  if(!state.sound || !('speechSynthesis' in window) || !text) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.lang = lang || 'en-US'; u.rate = lang && lang.indexOf('zh')===0 ? .9 : .78; u.pitch = 1.05;
+    window.speechSynthesis.speak(u);
+    if(play && play.i!=null) stat(play.i).reads++;
+  }catch(e){}
+}
+function toast(msg){
+  const old=$('.toast'); if(old) old.remove();
+  const d=document.createElement('div'); d.className='toast'; d.innerHTML=msg; document.body.appendChild(d);
+  if(!EMOJI_OK) patch(d);
+  setTimeout(()=>d.remove(),3200);
+}
+function setBg(theme){ bg.className='bg '+(theme||'map'); }
+function flakes(){
+  const f=$('#flakes'); if(!f.childNodes.length){
+    for(let i=0;i<18;i++){ const s=document.createElement('span'); s.className='flake'; s.textContent=i%3?'❄':'✦';
+      s.style.left=(Math.random()*100)+'%'; s.style.fontSize=(10+Math.random()*16)+'px';
+      s.style.animationDuration=(9+Math.random()*12)+'s'; s.style.animationDelay=(-Math.random()*14)+'s'; f.appendChild(s); }
+  }
+}
+flakes();
+
+/* ---------- 视图外壳 ---------- */
+function topbar(opts){
+  opts=opts||{};
+  const modeLabel = state.mode==='both'?'🌐 中英对照':state.mode==='en'?'🌐 English':'🌐 中文';
+  return `<div class="topbar">
+    <div class="pill">📖 冰雪故事书 · 魔法词书 <span style="opacity:.6">|</span> ${state.completed.length}/18 页</div>
+    <div class="right">
+      <button class="btn ghost small" data-act="mode">${modeLabel}</button>
+      <button class="btn ghost small" data-act="sound">${state.sound?'🔊 声音开':'🔇 声音关'}</button>
+      ${opts.back?'<button class="btn ghost small" data-act="map">🗺 回到目录</button>':''}
+    </div></div>`;
+}
+function lineHTML(e,z,extra){
+  const E=P(e), Z=P(z);
+  if(state.mode==='en') return `<div class="en-line" data-speak="${esc(T(e))}" data-lang="en-US" style="cursor:pointer">${E}</div>
+    ${play&&play.reveal?'<div class="zh-line">'+Z+'</div>':'<button class="reveal-btn" data-act="reveal">🤫 显示中文</button>'}`;
+  if(state.mode==='zh') return `<div class="en-line zh-line" style="font-size:clamp(19px,3vw,26px);cursor:pointer" data-speak="${esc(T(z))}" data-lang="zh-CN">${Z}</div>
+    ${play&&play.reveal?'<div class="zh-line">'+E+'</div>':'<button class="reveal-btn" data-act="reveal">🤫 显示英文</button>'}`;
+  return `<div class="en-line" data-speak="${esc(T(e))}" data-lang="en-US" style="cursor:pointer">${E}</div>
+    <div class="zh-line" data-speak="${esc(T(z))}" data-lang="zh-CN" style="cursor:pointer">${Z}</div>`+ (extra||'');
+}
+
+/* ---------- 标题页 ---------- */
+function renderTitle(){
+  setBg('title');
+  app.innerHTML = `<div class="screen"><div class="wrap title-box">
+    <div class="snowman">⛄</div>
+    <h1>冰雪故事书 · 魔法词书</h1>
+    <div class="eng">Frozen Storybook &amp; the Magic Word Book</div>
+    <div class="desc">18 篇完整故事 · 18 个闯关章节 · 中英对照 · 每章学会 6 个单词和 1 句简单的话<br>
+      <span style="opacity:.85">读故事 → 认单词 → 排情节 → 拼句子 → 做选择 → 点亮词书的一页</span></div>
+    <div class="name-field"><input id="nameInput" maxlength="12" placeholder="你的名字 / Your name" value="${esc(state.name)}"></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn primary" data-act="start">▶ 开始闯关 / Start</button>
+      ${state.completed.length?'<button class="btn" data-act="continue">📖 继续上次 / Continue</button>':''}
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn ghost small" data-act="book">📚 我的词库</button>
+      <button class="btn ghost small" data-act="stickers">⭐ 贴纸册</button>
+      <button class="btn ghost small" data-act="parent">👩‍🏫 家长角</button>
+      <button class="btn ghost small" data-act="mode">${state.mode==='both'?'🌐 中英对照':state.mode==='en'?'🌐 English':'🌐 中文'}</button>
+    </div>
+    <div class="footer-note" style="color:rgba(255,255,255,.85)">单文件离线运行 · 无需联网 · 进度自动保存在本机浏览器<br>
+      故事主线参照《Frozen Storybook Collection》18 篇篇目指南改编，对白为儿童英语教学向原创简写</div>
+  </div></div>`;
+}
+
+/* ---------- 目录 / 关卡地图 ---------- */
+function renderMap(){
+  setBg('map');
+  let pages=''; for(let i=0;i<18;i++) pages+=`<span class="pg ${state.completed.includes(i)?'on':''}" title="第 ${i+1} 页"></span>`;
+  let acts='';
+  GROUPS.forEach(g=>{
+    let cards='';
+    g.n.forEach(n=>{
+      const i=n-1, c=CH[i], ok=unlocked(i), done=state.completed.includes(i);
+      cards+=`<button class="ch-card ${ok?'':'locked'} ${done?'done':''}" ${ok?`data-act="open" data-i="${i}"`:'disabled'}>
+        <span class="badge">${done?'⭐':ok?'':''}${(!done&&ok)?'':''}</span>
+        <div class="num">CHAPTER ${String(n).padStart(2,'0')} ${c.comedy?'<span class="tag-comedy">轻喜剧</span>':''}</div>
+        <div class="emoji">${c.x}</div>
+        <h3>${esc(c.z)} ${done?'✅':''}</h3>
+        <div class="eng">${esc(c.e)}</div>
+        <div class="src">${esc(c.author)} · ${esc(c.place.z)}</div>
+      </button>`;
+    });
+    acts+=`<div class="act"><h3>${esc(g.z)}</h3><span class="sub" style="font-size:12.5px">${esc(g.e)}</span><span class="line"></span></div>
+      <div class="sub" style="font-size:13px;margin:-4px 0 10px">${esc(g.note)}</div>
+      <div class="chapters">${cards}</div>`;
+  });
+  app.innerHTML=`<div class="screen"><div class="wrap">
+    ${topbar()}
+    <div class="map-head"><div><h2>🗺 故事目录 / Story Map</h2>
+      <div class="sub">按原书目录顺序，18 篇故事一篇不落。读完一章，词书就亮起一页。</div></div>
+      <div><div class="sub" style="font-size:13px;margin-bottom:4px">魔法词书 · ${state.completed.length}/18 页</div><div class="pages">${pages}</div></div></div>
+    ${acts}
+    <div class="row" style="margin-top:24px">
+      <button class="btn ghost small" data-act="book">📚 我的词库</button>
+      <button class="btn ghost small" data-act="stickers">⭐ 贴纸册</button>
+      <button class="btn ghost small" data-act="parent">👩‍🏫 家长角</button>
+      ${state.completed.length===18?'<button class="btn primary small" data-act="finale">🎉 翻开结局</button>':''}
+    </div>
+    <div class="footer-note">顺序解锁 · 无计时 · 答错不扣分 · 每章都能重玩<br>情节主线与角色依据附件篇目指南保留；中文/英文/双语可在右上角随时切换</div>
+  </div></div>`;
+}
+
+/* ---------- 章节步骤生成（线性主干 + 分支收敛） ---------- */
+function buildSteps(c){
+  const s=[{k:'cover'}];
+  c.beats[0].lines.forEach(l=>s.push(Object.assign({k:'say',act:c.beats[0].act},l)));
+  s.push({k:'words'});
+  c.beats[1].lines.forEach(l=>s.push(Object.assign({k:'say',act:c.beats[1].act},l)));
+  s.push({k:'order'});
+  c.beats[2].lines.forEach(l=>s.push(Object.assign({k:'say',act:c.beats[2].act},l)));
+  s.push({k:'puzzle'},{k:'choice'},{k:'moment'},{k:'end'});
+  return s;
+}
+let play=null;
+function startChapter(i){
+  play={i, steps:buildSteps(CH[i]), si:0, queue:[], reveal:false, sub:null, eggShown:false, momentDone:false};
+  state.view='play'; setBg(CH[i].theme); render();
+  nextStep();
+}
+function nextStep(){
+  play.reveal=false; play.sub=null;
+  if(play.queue.length){ play.step=play.queue.shift(); render(); if(state.autoRead) autoSay(); return; }
+  if(play.si>=play.steps.length){ finishChapter(); return; }
+  play.step=play.steps[play.si++];
+  render(); if(state.autoRead) autoSay();
+}
+function autoSay(){
+  const s=play.step;
+  if(s && s.k==='say') speak(state.mode==='zh'?T(s.z):T(s.e), state.mode==='zh'?'zh-CN':'en-US');
+}
+function finishChapter(){
+  const i=play.i;
+  if(!state.completed.includes(i)) state.completed.push(i);
+  state.ended = state.completed.length===18; save();
+  if(state.ended){ renderFinale(); return; }
+  state.view='map'; play=null; renderMap();
+  toast(`⭐ 第 ${i+1} 页点亮啦！下一章已解锁 / Page ${i+1} is lit!`);
+}
+function goMap(){ play=null; state.view='map'; render(); }
+
+/* ---------- 主渲染 ---------- */
+function render(){
+  if(!play){ renderMap(); return; }
+  const c=CH[play.i], s=play.step;
+  if(!s){ renderMap(); return; }
+  const bar=topbar({back:true});
+  let body='';
+  switch(s.k){
+    case 'cover': body=renderCover(c); break;
+    case 'say': body=renderSay(c,s); break;
+    case 'words': body=renderWords(c); break;
+    case 'order': body=renderOrder(c); break;
+    case 'puzzle': body=renderPuzzle(c); break;
+    case 'choice': body=renderChoice(c); break;
+    case 'moment': body=renderMoment(c); break;
+    case 'end': body=renderEnd(c); break;
+  }
+  app.innerHTML=`<div class="screen"><div class="wrap">${bar}<div class="stage">${body}</div></div></div>`;
+}
+
+function renderCover(c){
+  const g=GROUPS.find(x=>x.id===c.g);
+  return `<div class="card cover-card" style="max-width:640px">
+    <div class="num" style="font-size:12px;font-weight:800;color:var(--blue);letter-spacing:2px">CHAPTER ${String(c.n).padStart(2,'0')} / 18 · ${esc(g.z)}</div>
+    <div class="big">${c.x}</div>
+    <h2>${esc(c.z)}</h2>
+    <div class="eng" style="font-family:Georgia,serif;font-size:20px;color:var(--deep)">${esc(c.e)}</div>
+    <div class="author">by ${esc(c.author)} · ${esc(c.place.e)} / ${esc(c.place.z)}</div>
+    <div class="mainline"><b>本篇主线 · The Story</b><br>${lineHTML(c.mainline.e,c.mainline.z,'')}</div>
+    <div class="sub" style="margin-top:14px;font-size:14px">这一章你会：读 3 幕剧情 → 认 6 个单词 → 排 3 张情节卡 → 拼 1 句魔法句 → 做 1 个选择</div>
+    <div class="row" style="margin-top:16px"><button class="btn primary" data-act="next">▶ 开始读故事</button></div>
+  </div>`;
+}
+function renderSay(c,s){
+  const who=CAST[s.w]||CAST.narrator;
+  const egg=(!play.eggShown && s===play.steps[1])?`<button class="egg-btn" data-act="egg" title="找一找">❄️</button>`:'';
+  const isLast = (play.si>=play.steps.length && !play.queue.length);
+  return `<div class="actor"><div class="avatar">${who.x}</div><div class="who">${esc(who.e)} · ${esc(who.z)}</div></div>
+    <div class="dlg">${egg}<div class="beat">${esc(T(s.act.e))} / ${esc(T(s.act.z))}</div>
+      ${lineHTML(s.e,s.z)}
+      <div class="actions">
+        <button class="speak-btn" data-act="say-en" data-e="${esc(T(s.e))}">🔊 听英文</button>
+        <button class="speak-btn" data-act="say-zh" data-z="${esc(T(s.z))}">🔊 听中文</button>
+        <button class="btn primary small" data-act="next">▶ 继续</button>
+      </div></div>
+    <div class="sub" style="font-size:13px">第 ${c.n} 章 · ${esc(c.z)} / ${esc(c.e)}</div>`;
+}
+function renderWords(c){
+  if(!play.sub){
+    const order=c.words.map((_,i)=>i); shuffle(order);
+    const all=[]; CH.forEach(x=>x.words.forEach(w=>{ if(!all.some(a=>a.e===w.e)) all.push(w); }));
+    const qs=order.map(idx=>{
+      const w=c.words[idx], pool=all.filter(a=>a.e!==w.e); shuffle(pool);
+      const opts=[w,pool[0],pool[1],pool[2]]; shuffle(opts);
+      return {w,opts,answer:opts.indexOf(w)};
+    });
+    play.sub={k:'words',qs,pos:0,done:false,wrong:false,ok:false};
+  }
+  const q=play.sub, cur=q.qs[q.pos], w=cur.w;
+  return `<div class="card" style="max-width:660px;width:100%">
+    <div class="quiz-head"><div><b>① 认单词 / Word Gate</b><div class="sub">看图选词 · 点单词可以听发音</div></div>
+      <div class="pill">${q.pos+1} / ${q.qs.length}</div></div>
+    <div class="center"><div class="big-emoji">${w.x}</div>
+      <div class="en-line" style="margin-top:6px">${esc(w.z)}</div>
+      <div class="sub">Which word is this? 点一下选出来</div></div>
+    <div class="opts" style="margin-top:16px">${cur.opts.map((o,j)=>`<button class="opt ${q.wrong&&j!==cur.answer?'':''}" data-act="word-opt" data-j="${j}">${esc(o.e)}<small>${esc(o.z)}</small></button>`).join('')}</div>
+    <div class="feedback" style="margin-top:12px">${q.ok?'🎉 '+esc(w.e)+' · '+esc(w.z)+' — 太棒了！':q.wrong?'再听一次，没关系～ 点 🔊 试试':'&nbsp;'}</div>
+    <div class="row" style="margin-top:6px">
+      <button class="btn ghost small" data-act="say-en" data-e="${esc(w.e)}">🔊 再听一遍</button>
+      ${q.ok?`<button class="btn primary small" data-act="word-next">${q.pos+1>=q.qs.length?'▶ 完成单词关':'▶ 下一词'}</button>`:''}
+    </div></div>`;
+}
+function renderOrder(c){
+  if(!play.sub || play.sub.k!=='order'){
+    const arr=c.order.map((o,idx)=>({o,idx})); shuffle(arr);
+    play.sub={k:'order',arr,picked:[],wrong:false,ok:false};
+  }
+  const q=play.sub;
+  return `<div class="card" style="max-width:680px;width:100%">
+    <div class="quiz-head"><div><b>② 排情节 / Put the Story in Order</b>
+      <div class="sub">把这一篇的 3 张剧情卡按 <b>起因 → 经过 → 结果</b> 排好</div></div>
+      <div class="pill">${esc(c.e)}</div></div>
+    <div class="sub" style="margin-bottom:8px">你排的顺序 / Your order：</div>
+    <div class="slots" style="min-height:56px">${q.picked.length?q.picked.map((p,j)=>`<button class="slot" data-act="order-undo" data-j="${j}" style="cursor:pointer">${j+1}. ${esc(T(p.o.z))}</button>`).join(''):'<span class="slot ph">① 先点下面第一张卡…</span>'}</div>
+    <div class="choices" style="margin-top:12px">${q.arr.map((a,j)=>`<button class="ordercard ${q.picked.some(p=>p.idx===a.idx)?'picked':''}" data-act="order-pick" data-j="${j}" ${q.picked.some(p=>p.idx===a.idx)?'disabled':''}>
+      <span class="n">${q.picked.some(p=>p.idx===a.idx)?'✓':String.fromCharCode(65+j)}</span>
+      <span><strong>${esc(T(a.o.e))}</strong><span>${esc(T(a.o.z))}</span></span></button>`).join('')}</div>
+    <div class="feedback" style="margin-top:10px">${q.ok?'🎉 主线完全正确！':q.wrong?'顺序还差一点，点上面的卡片可以撤回来重排～':'&nbsp;'}</div>
+    <div class="row" style="margin-top:4px">${q.ok?'<button class="btn primary small" data-act="next">▶ 继续读故事</button>':'<button class="btn ghost small" data-act="order-reset">↺ 重排</button>'}</div>
+  </div>`;
+}
+function renderPuzzle(c){
+  if(!play.sub || play.sub.k!=='puzzle'){
+    const t=c.magic.t.map((txt,idx)=>({txt,idx}));
+    let guard=0; do{ shuffle(t); guard++; }while(guard<12 && t.map(x=>x.txt).join('|')===c.magic.t.join('|'));
+    play.sub={k:'puzzle',pool:t,slots:[],wrong:false,ok:false,hint:false};
+  }
+  const q=play.sub;
+  return `<div class="card" style="max-width:680px;width:100%">
+    <div class="quiz-head"><div><b>③ 拼句子 / Build the Magic Sentence</b>
+      <div class="sub">按顺序点词块，把这一章的魔法句拼出来</div></div>
+      <div class="pill">${c.magic.t.length} 块</div></div>
+    <div class="slots">${q.slots.length?q.slots.map((t,j)=>`<button class="slot" data-act="token-undo" data-j="${j}" style="cursor:pointer">${esc(t.txt)}</button>`).join(''):'<span class="slot ph">点下面的词块放进来…</span>'}</div>
+    <div class="pool">${q.pool.map((t,j)=>`<button class="token ${q.hint&&t.idx===q.slots.length?'hint':''}" data-act="token-pick" data-j="${j}">${esc(t.txt)}</button>`).join('')}</div>
+    <div class="center" style="margin-top:12px"><div class="sub">中文意思是</div><div style="font-size:18px;font-weight:800">${esc(c.magic.z)}</div></div>
+    <div class="feedback" style="margin-top:10px">${q.ok?'🎉 '+esc(c.magic.e):q.wrong?'再试一次～ 点上面的词块可以退回来':q.hint?'💡 金色边框的那一块是下一个词':'&nbsp;'}</div>
+    <div class="row" style="margin-top:4px">
+      <button class="btn ghost small" data-act="say-en" data-e="${esc(c.magic.e)}">🔊 听整句</button>
+      <button class="btn ghost small" data-act="puzzle-hint">🔍 提示</button>
+      ${q.ok?'<button class="btn primary small" data-act="next">▶ 继续</button>':'<button class="btn ghost small" data-act="puzzle-reset">↺ 重拼</button>'}
+    </div></div>`;
+}
+function renderChoice(c){
+  if(!play.sub || play.sub.k!=='choice'){
+    play.sub={k:'choice',q:c.choice,picked:null};
+  }
+  const q=play.sub;
+  if(q.picked!==null){
+    const o=q.q.opts[q.picked];
+    return `<div class="card" style="max-width:660px;width:100%;text-align:center">
+      <div class="sub">你选择了 / You chose</div>
+      <div class="en-line" style="margin:6px 0">${esc(T(o.e))}</div>
+      <div class="zh-line">${esc(T(o.z))}</div>
+      <div style="font-size:64px;margin:14px 0 4px;animation:pop .5s">${o.fx.x}</div>
+      <div class="en-line" style="font-size:19px">${esc(T(o.fx.e))}</div>
+      <div class="zh-line">${esc(T(o.fx.z))}</div>
+      <div class="dlg" style="margin-top:16px;text-align:left"><div class="beat">${esc(CAST[o.r.w]?CAST[o.r.w].e:'')} / ${esc(CAST[o.r.w]?CAST[o.r.w].z:'')}</div>
+        ${lineHTML(o.r.e,o.r.z)}</div>
+      <div class="pill" style="margin-top:12px">获得贴纸 ${o.st.x} ${esc(o.st.z)} / ${esc(o.st.e)}</div>
+      <div class="row" style="margin-top:14px"><button class="btn primary small" data-act="next">▶ 继续</button></div></div>`;
+  }
+  return `<div class="card" style="max-width:660px;width:100%">
+    <div class="quiz-head"><div><b>④ 你会怎么做？ / Your Choice</b>
+      <div class="sub">三个选择各不相同，都会推进故事，只是角色的回应和贴纸不同</div></div>
+      <div class="pill">${esc(c.x)}</div></div>
+    <div class="en-line" style="font-size:21px;margin-bottom:4px">${esc(T(q.q.e))}</div>
+    <div class="zh-line" style="margin-bottom:14px">${esc(T(q.q.z))}</div>
+    <div class="choices">${q.q.opts.map((o,j)=>`<button class="choice" data-act="choice-pick" data-j="${j}">
+      <span class="k">${['🅰','🅱','🅲'][j]}</span><span class="t"><strong>${esc(T(o.e))}</strong><span>${esc(T(o.z))} · ${esc(o.tag)}</span></span></button>`).join('')}</div>
+  </div>`;
+}
+function renderMoment(c){
+  if(!play.sub || play.sub.k!=='moment') play.sub={k:'moment',done:false};
+  const q=play.sub;
+  if(q.done){
+    return `<div class="moment glow" style="max-width:660px">
+      <div class="reveal-big">${c.moment.x}</div>
+      <div class="en-line" style="font-size:21px">${esc(T(c.moment.e))}</div>
+      <div class="zh-line">${esc(T(c.moment.z))}</div>
+      <div style="font-size:64px;margin:12px 0">📖✨</div>
+      <h3>第 ${c.n} 页，亮起来了！ / Page ${c.n} is lit!</h3>
+      <div class="sub">你刚学会的一句： <b>${esc(c.magic.e)}</b> / ${esc(c.magic.z)}</div>
+      <div class="row" style="margin-top:16px"><button class="btn primary small" data-act="next">▶ 本章回顾</button></div>
+    </div>`;
+  }
+  return `<div class="moment glow" style="max-width:660px">
+    <div class="sub">✨ 魔法句时刻 / The Magic Sentence</div>
+    <div style="font-size:50px">${c.x}</div>
+    <div class="sentence">${esc(c.magic.e)}</div>
+    <div class="zh">${esc(c.magic.z)}</div>
+    <div class="sub" style="margin-top:10px">大声把它说出来，故事就会往前走一步</div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn ghost small" data-act="say-en" data-e="${esc(c.magic.e)}">🔊 听一遍</button>
+      <button class="btn primary" data-act="moment-say">🗣 我来说！</button>
+    </div></div>`;
+}
+function renderEnd(c){
+  return `<div class="card" style="max-width:700px;width:100%">
+    <div class="center"><div style="font-size:54px">${c.sticker.x}</div>
+      <h2>第 ${c.n} 章完成！ / Chapter ${c.n} Cleared</h2>
+      <div class="sub">${esc(c.z)} · ${esc(c.e)} · by ${esc(c.author)}</div></div>
+    <div class="mainline card" style="background:#f2f8ff;box-shadow:none;margin:14px 0;padding:14px">
+      <b>📖 本篇主线 / The Story in One Line</b><br>${lineHTML(c.mainline.e,c.mainline.z,'')}</div>
+    <div class="sub" style="font-weight:800;margin:10px 0 6px">这一章的 6 个单词 / Words</div>
+    <div class="list">${c.words.map(w=>`<button class="wordchip" data-act="say-en" data-e="${esc(w.e)}"><div class="x">${w.x}</div><div class="e">${esc(w.e)}</div><div class="z">${esc(w.z)}</div></button>`).join('')}</div>
+    <div class="sub" style="font-weight:800;margin:14px 0 6px">这一章的魔法句 / Magic Sentence</div>
+    <div class="center card" style="background:#fff8e6;box-shadow:none;padding:12px">
+      <div style="font-family:Georgia,serif;font-size:22px;font-weight:800;color:var(--deep)">${esc(c.magic.e)}</div>
+      <div class="zh-line">${esc(c.magic.z)}</div>
+      <button class="btn ghost small" style="margin-top:8px" data-act="say-en" data-e="${esc(c.magic.e)}">🔊 再听一遍</button></div>
+    <div class="row" style="margin-top:18px">
+      <button class="btn ghost small" data-act="map">🗺 回到目录</button>
+      ${play.i<17?`<button class="btn primary" data-act="open" data-i="${play.i+1}">▶ 下一章：${esc(CH[play.i+1].z)}</button>`:
+        '<button class="btn primary" data-act="next">🎉 翻开结局</button>'}
+    </div></div>`;
+}
+
+/* ---------- 词库 / 贴纸 / 家长角 / 结局 ---------- */
+function renderBook(view){
+  setBg('map');
+  const done=state.completed;
+  let html='';
+  CH.forEach((c,i)=>{
+    if(!done.includes(i) && !state.classroom) return;
+    html+=`<div class="act"><h3>${String(c.n).padStart(2,'0')} · ${esc(c.z)}</h3><span class="sub" style="font-size:13px">${esc(c.e)}</span><span class="line"></span></div>
+      <div class="list">${c.words.map(w=>`<button class="wordchip" data-act="say-en" data-e="${esc(w.e)}"><div class="x">${w.x}</div><div class="e">${esc(w.e)}</div><div class="z">${esc(w.z)}</div></button>`).join('')}</div>
+      <div class="card" style="margin-top:8px;box-shadow:none;background:#fff8e6;padding:10px 14px">
+        <b style="font-family:Georgia,serif">${esc(c.magic.e)}</b> <span class="sub">/ ${esc(c.magic.z)}</span>
+        <button class="btn ghost small" style="float:right" data-act="say-en" data-e="${esc(c.magic.e)}">🔊</button></div>`;
+  });
+  if(!html) html='<div class="card center sub">还没有学过的单词，先去读第 1 章吧 📖</div>';
+  app.innerHTML=`<div class="screen"><div class="wrap">${topbar({back:true})}
+    <h2>📚 我的词库 / My Word Book</h2>
+    <div class="sub" style="margin-bottom:14px">已点亮 ${done.length}/18 页 · 累计 ${done.length*6} 个单词 · ${done.length} 句简单表达 · 点任意卡片可听发音</div>
+    ${html}</div></div>`;
+}
+function renderStickers(){
+  setBg('map');
+  let cards='';
+  CH.forEach((c,i)=>{
+    const s=state.stickers[i];
+    cards+=s?`<div class="card center" style="padding:14px"><div style="font-size:38px">${s.x}</div>
+        <b style="font-size:14px">${esc(s.z)}</b><div class="sub" style="font-size:12px">${esc(s.e)}</div>
+        <div class="sub" style="font-size:11px">Ch.${c.n} · ${esc(c.z)}</div></div>`:
+      `<div class="card center" style="padding:14px;opacity:.4"><div style="font-size:38px">❔</div>
+        <b style="font-size:14px">第 ${c.n} 章</b><div class="sub" style="font-size:12px">尚未获得</div></div>`;
+  });
+  const eggs=Object.keys(state.eggs).filter(k=>state.eggs[k]).length;
+  app.innerHTML=`<div class="screen"><div class="wrap">${topbar({back:true})}
+    <h2>⭐ 贴纸册 / Sticker Book</h2>
+    <div class="sub" style="margin-bottom:14px">每章的选择都会得到一张不同的贴纸 · 已收集 ${Object.keys(state.stickers).length}/18 · 隐藏雪花 ❄️ ${eggs}/18</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">${cards}</div>
+    ${eggs===18?'<div class="card center" style="margin-top:16px;background:#fff8e6">🏅 <b>隐藏徽章已解锁</b> — 18 片雪花拼成了词书的最后一页，去结局里看看吧！</div>':''}
+    </div></div>`;
+}
+function renderParent(){
+  setBg('map');
+  let rows='';
+  CH.forEach((c,i)=>{
+    const s=state.stats[i], done=state.completed.includes(i);
+    rows+=`<tr><td>${c.n}. ${esc(c.z)}</td><td>${done?'✅ 已完成':'—'}</td>
+      <td>${s?s.word:0}</td><td>${s?s.order:0}</td><td>${s?s.puzzle:0}</td><td>${s?s.reads:0}</td>
+      <td>${s&&s.choice?esc(s.choice):'—'}</td><td>${state.eggs[i]?'❄️':'—'}</td></tr>`;
+  });
+  app.innerHTML=`<div class="screen"><div class="wrap">${topbar({back:true})}
+    <h2>👩‍🏫 家长角 / For Grown-ups</h2>
+    <div class="card" style="margin-bottom:14px">
+      <b>进度</b>：${state.completed.length}/18 章 · ${state.completed.length*6} 词 · ${state.completed.length} 句 · 贴纸 ${Object.keys(state.stickers).length}/18 · 隐藏雪花 ${Object.keys(state.eggs).filter(k=>state.eggs[k]).length}/18
+      <div class="sub" style="margin-top:6px">「尝试次数」只作为复习参考，不参与评分、不显示给孩子。答错不扣分，也没有计时。数据只存在本机浏览器，不会上传。</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost small" data-act="toggle-auto">🔁 自动朗读：${state.autoRead?'开':'关'}</button>
+        <button class="btn ghost small" data-act="toggle-class">🔓 课堂模式（解锁全部）：${state.classroom?'开':'关'}</button>
+        <button class="btn ghost small" data-act="reset">↺ 清空进度</button>
+      </div></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>章节</th><th>状态</th><th>单词尝试</th><th>情节排序尝试</th><th>拼句尝试</th><th>朗读次数</th><th>所选分支</th><th>彩蛋</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <div class="card" style="margin-top:14px;background:#f2f8ff;box-shadow:none">
+      <b>📌 共读建议</b><br>
+      <span class="sub">· 先用「中英对照」，读熟后切到「English」再读一遍；「中文」模式适合先理解故事。<br>
+      · 每章的「排情节」可以让孩子用自己的话复述起因、经过、结果，这是全书主线的核心练习。<br>
+      · 「魔法句」是每篇主题凝成的一句简单表达，鼓励孩子在生活中照着说一次。<br>
+      · 三个分支没有对错，可以重玩同一章，看看不同选择里角色会说什么。</span></div>
+    </div></div>`;
+}
+function renderFinale(){
+  setBg('finale');
+  const eggs=Object.keys(state.eggs).filter(k=>state.eggs[k]).length;
+  const secrets = eggs===18 ? `<div class="card" style="margin-top:14px;background:#fff8e6">
+    <h3>🏅 隐藏的最后一页 / The Last Page</h3>
+    <div class="en-line" style="font-size:20px">A long time ago, the first word carved into Bulda's crystal was: Hello.</div>
+    <div class="zh-line">很久很久以前，布达的水晶上刻下的第一个词是：Hello（你好）。</div>
+    <div class="sub" style="margin-top:8px">你集齐了 18 片隐藏雪花，才翻到这一页。全书 18 篇故事，原来是从一个招呼开始的。</div></div>`:'';
+  app.innerHTML=`<div class="screen"><div class="wrap">
+    ${topbar({back:true})}
+    <div class="card center" style="padding:30px 22px;background:rgba(255,253,248,.96)">
+      <div style="font-size:clamp(64px,12vw,110px);animation:pop .7s">📖✨</div>
+      <h2>词书，合上了。/ The Book Closes.</h2>
+      <div class="sub">18 篇故事，18 页全部亮起 · ${18*6} 个单词 · 18 句简单的话</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:18px 0">
+        ${CH.map(c=>`<span style="font-size:24px" title="${esc(c.z)}">${c.x}</span>`).join('')}</div>
+      <div class="en-line" style="font-size:20px">"Hello, ${esc(state.name||'Friend')}."</div>
+      <div class="zh-line">扉页上写着你的名字：你好，${esc(state.name||'小朋友')}。</div>
+      <div class="sub" style="margin-top:12px;max-width:560px;margin-left:auto;margin-right:auto">
+        从艾莎关上的那扇门，到安娜牵起的那只手；从一场歪掉的生日蛋糕，到一块留给别人的糖——<br>
+        Every single story was really about one small sentence said out loud.</div>
+      ${secrets}
+      <div class="row" style="margin-top:20px">
+        <button class="btn primary" data-act="map">🗺 回目录重读</button>
+        <button class="btn ghost small" data-act="book">📚 我的词库</button>
+        <button class="btn ghost small" data-act="stickers">⭐ 贴纸册</button>
+        <button class="btn ghost small" data-act="title">🏠 首页</button>
+      </div></div>
+    <div class="footer-note" style="color:#fff">全书 18 篇篇目、作者、顺序与主线，均依据附件《Frozen Storybook Collection》指南保留</div>
+  </div></div>`;
+}
+
+/* ==================== 交互 ==================== */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+app.addEventListener('click', e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act, i=parseInt(b.dataset.i), j=parseInt(b.dataset.j);
+  switch(a){
+    case 'mode': state.mode = state.mode==='both'?'en':state.mode==='en'?'zh':'both'; save(); renderCurrent(); break;
+    case 'sound': state.sound=!state.sound; if(!state.sound&&'speechSynthesis'in window)speechSynthesis.cancel(); save(); renderCurrent(); break;
+    case 'start': {
+      const v=$('#nameInput'); state.name=(v&&v.value.trim())||'Friend'; save(); goMap(); break;
+    }
+    case 'continue': goMap(); break;
+    case 'title': play=null; renderTitle(); break;
+    case 'map': goMap(); break;
+    case 'book': play=null; renderBook(); break;
+    case 'stickers': play=null; renderStickers(); break;
+    case 'parent': play=null; renderParent(); break;
+    case 'finale': play=null; renderFinale(); break;
+    case 'open': startChapter(i); break;
+    case 'next': {
+      // 结局由最后一章 end 触发
+      if(play && play.step && play.step.k==='end' && play.i===17){ finishChapter(); }
+      else nextStep(); break;
+    }
+    case 'reveal': play.reveal=true; render(); break;
+    case 'say-en': speak(b.dataset.e||T(play&&play.step&&play.step.e),'en-US'); break;
+    case 'say-zh': speak(b.dataset.z||T(play&&play.step&&play.step.z),'zh-CN'); break;
+    case 'egg': {
+      if(play.eggShown) break; play.eggShown=true; state.eggs[play.i]=true; save();
+      const c=CH[play.i];
+      toast('❄️ '+esc(T(c.egg.e))+'<br>'+esc(T(c.egg.z))); b.remove(); break;
+    }
+    /* 单词关 */
+    case 'word-opt': {
+      const q=play.sub, cur=q.qs[q.pos]; stat(play.i).word++;
+      if(j===cur.answer){ q.ok=true; q.wrong=false; speak(cur.w.e,'en-US'); }
+      else { q.wrong=true; q.ok=false; }
+      save(); render(); break;
+    }
+    case 'word-next': {
+      const q=play.sub;
+      if(q.pos+1>=q.qs.length){ play.sub=null; nextStep(); }
+      else { q.pos++; q.ok=false; q.wrong=false; render(); }
+      break;
+    }
+    /* 情节排序 */
+    case 'order-pick': {
+      const q=play.sub; stat(play.i).order++;
+      q.picked.push(q.arr[j]); q.wrong=false;
+      if(q.picked.length===3){
+        if(q.picked.every((p,k)=>p.idx===k)){ q.ok=true; speak('Well done! The story is in order.','en-US'); }
+        else q.wrong=true;
+      }
+      save(); render(); break;
+    }
+    case 'order-undo': { const q=play.sub; q.picked.splice(j,1); q.ok=false; q.wrong=false; render(); break; }
+    case 'order-reset': { const q=play.sub; q.picked=[]; q.ok=false; q.wrong=false; shuffle(q.arr); render(); break; }
+    /* 拼句 */
+    case 'token-pick': {
+      const q=play.sub; q.slots.push(q.pool.splice(j,1)[0]); q.wrong=false; q.hint=false;
+      const c=CH[play.i];
+      if(q.slots.length===c.magic.t.length){
+        stat(play.i).puzzle++;
+        if(q.slots.map(x=>x.txt).join(' ')===c.magic.e){ q.ok=true; speak(c.magic.e,'en-US'); }
+        else q.wrong=true;
+      }
+      save(); render(); break;
+    }
+    case 'token-undo': { const q=play.sub; const t=q.slots.splice(j,1)[0]; if(t) q.pool.push(t); q.ok=false; q.wrong=false; render(); break; }
+    case 'puzzle-hint': play.sub.hint=true; render(); break;
+    case 'puzzle-reset': {
+      const c=CH[play.i], t=c.magic.t.map((txt,idx)=>({txt,idx})); shuffle(t);
+      play.sub={k:'puzzle',pool:t,slots:[],wrong:false,ok:false,hint:false}; render(); break;
+    }
+    /* 选择 */
+    case 'choice-pick': {
+      const c=CH[play.i], o=c.choice.opts[j];
+      play.sub.picked=j; state.flags['ch'+c.n]=o.tag;
+      state.stickers[play.i]={x:o.st.x,z:o.st.z,e:o.st.e};
+      stat(play.i).choice=o.tag; save(); render(); break;
+    }
+    /* 魔法句 */
+    case 'moment-say': {
+      const c=CH[play.i]; speak(c.magic.e,'en-US');
+      play.sub.done=true;
+      if(!state.completed.includes(play.i)) state.completed.push(play.i);
+      save(); render(); break;
+    }
+    case 'toggle-auto': state.autoRead=!state.autoRead; save(); renderParent(); break;
+    case 'toggle-class': state.classroom=!state.classroom; save(); renderParent(); break;
+    case 'reset': {
+      if(confirm('确定清空全部进度吗？（不可恢复）')){
+        localStorage.removeItem(KEY);
+        state={name:state.name,mode:state.mode,sound:state.sound,autoRead:false,classroom:false,completed:[],stickers:{},eggs:{},flags:{},stats:{},ended:false};
+        save(); play=null; renderTitle();
+      }
+      break;
+    }
+  }
+});
+/* 点击台词直接朗读（不含按钮区域） */
+app.addEventListener('click',e=>{
+  const t=e.target.closest('[data-speak]');
+  if(t && !e.target.closest('[data-act]')) speak(t.dataset.speak,t.dataset.lang);
+});
+/* 键盘：Enter/Space 继续，1/2/3 选择，Esc 回目录 */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && play){ goMap(); return; }
+  if(!play) return;
+  if(e.key==='Enter'||e.key===' '){
+    if(e.target.tagName==='INPUT') return;
+    const nx=app.querySelector('[data-act="next"],[data-act="word-next"]');
+    if(nx){ e.preventDefault(); nx.click(); }
+  }
+  if(['1','2','3'].includes(e.key)){
+    const opts=app.querySelectorAll('[data-act="choice-pick"],[data-act="word-opt"],[data-act="order-pick"]');
+    const k=parseInt(e.key)-1; if(opts[k]) opts[k].click();
+  }
+});
+function renderCurrent(){
+  if(!play){
+    const h=app.querySelector('h2');
+    if(!h){ renderTitle(); return; }
+    const t=h.textContent;
+    if(t.indexOf('故事目录')>=0) renderMap();
+    else if(t.indexOf('词库')>=0) renderBook();
+    else if(t.indexOf('贴纸册')>=0) renderStickers();
+    else if(t.indexOf('家长角')>=0) renderParent();
+    else if(t.indexOf('词书，合上')>=0) renderFinale();
+    else renderTitle();
+  } else render();
+}
+renderTitle();
+</script>
+</body>
+</html>
